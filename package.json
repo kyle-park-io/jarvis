@@ -7,7 +7,8 @@
   },
   "scripts": {
     "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "jarvis": "pnpm --filter @jarvis/cli exec tsx src/bin.ts"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.9",
