@@ -70,4 +70,9 @@ describe('repository', () => {
       { date: '2026-07-15', streamId: 's1', taskId: 't1', hours: 1 },
     ]);
   });
+
+  it('round-trips a task with a sourceRef', () => {
+    upsertTask(db, task({ id: 't3', sourceRef: 'github:owner/repo#42' }));
+    expect(getTasks(db)[0]?.sourceRef).toBe('github:owner/repo#42');
+  });
 });
