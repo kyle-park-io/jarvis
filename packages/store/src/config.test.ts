@@ -50,4 +50,23 @@ streams:
 `);
     expect(() => loadConfig(dir)).toThrow();
   });
+
+  it('returns defaults for an empty config file', () => {
+    writeConfig('');
+    const cfg = loadConfig(dir);
+    expect(cfg.streams).toEqual([]);
+    expect(cfg.dailyCapacityHours).toBe(8);
+    expect(cfg.droppedBallDays).toBe(1);
+  });
+
+  it('rejects an unknown field on a stream (strict)', () => {
+    writeConfig(`
+streams:
+  - id: work
+    name: Work
+    weeklyBudgetHours: 20
+    wieght: 0.5
+`);
+    expect(() => loadConfig(dir)).toThrow();
+  });
 });
