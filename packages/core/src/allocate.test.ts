@@ -132,4 +132,15 @@ describe('allocate', () => {
     expect(res.allocation.lines[0]?.targetHours).toBe(8);
     expect(res.allocation.lines[0]?.tasks.map((t) => t.id)).toEqual(['t1']);
   });
+
+  it('omits a line whose target rounds down to zero (fractional near-exhausted budget)', () => {
+    const res = allocate(
+      baseInput({
+        streams: [stream({ id: 's1', weeklyBudgetHours: 8.12 })],
+        weekLogs: [{ date: '2026-07-13', streamId: 's1', hours: 8 }],
+      }),
+    );
+    // remaining 0.12 over 4 workdays -> ~0.03 -> round1 -> 0 -> line must be omitted
+    expect(res.allocation.lines).toEqual([]);
+  });
 });

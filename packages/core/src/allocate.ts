@@ -61,9 +61,9 @@ export function allocate(input: AllocateInput): AllocateResult {
   }
 
   const lines: AllocationLine[] = raw
-    .filter((r) => r.target > 0.01)
     .sort((a, b) => b.target - a.target)
-    .map((r) => ({ streamId: r.stream.id, targetHours: round1(r.target), tasks: r.tasks }));
+    .map((r) => ({ streamId: r.stream.id, targetHours: round1(r.target), tasks: r.tasks }))
+    .filter((l) => l.targetHours > 0);
 
   return { allocation: { date, capacityHours: capacity, lines, overcommitted }, alerts };
 }
