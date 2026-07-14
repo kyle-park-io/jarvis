@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseStreamLine } from './parse';
+import { parseStreamLine, parseStreamFile } from './parse';
 
 describe('parseStreamLine', () => {
   it('parses a todo with deadline and estimate, stripping the metadata from the title', () => {
@@ -43,5 +43,19 @@ describe('parseStreamLine', () => {
     expect(parseStreamLine('s', '')).toBeNull();
     expect(parseStreamLine('s', 'just prose')).toBeNull();
     expect(parseStreamLine('s', '- not a checkbox')).toBeNull();
+  });
+});
+
+describe('parseStreamFile', () => {
+  it('parses only the task lines, in order, ignoring headings and prose', () => {
+    const content = ['# Trading', '', '- [ ] First @2026-07-20', 'some prose', '- [x] Second', ''].join('\n');
+    const tasks = parseStreamFile('trading', content);
+    expect(tasks.map((t) => t.title)).toEqual(['First', 'Second']);
+    expect(tasks.map((t) => t.status)).toEqual(['todo', 'done']);
+    expect(tasks[0]?.deadline).toBe('2026-07-20');
+  });
+
+  it('returns an empty array for a file with no tasks', () => {
+    expect(parseStreamFile('s', '# Just a heading\n\nsome notes')).toEqual([]);
   });
 });

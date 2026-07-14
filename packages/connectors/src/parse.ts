@@ -29,3 +29,12 @@ export function parseStreamLine(streamId: string, line: string): Task | null {
   if (estimateHours !== undefined) task.estimateHours = estimateHours;
   return task;
 }
+
+export function parseStreamFile(streamId: string, content: string): Task[] {
+  const tasks: Task[] = [];
+  for (const line of content.split('\n')) {
+    const task = parseStreamLine(streamId, line);
+    if (task) tasks.push(task);
+  }
+  return tasks;
+}
