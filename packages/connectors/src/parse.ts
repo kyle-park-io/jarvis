@@ -1,4 +1,4 @@
-import type { Task } from '@jarvis/core';
+import { parseISODate, toISODate, type Task } from '@jarvis/core';
 
 const TASK_RE = /^- \[( |x|X)\]\s+(.*)$/;
 const DEADLINE_RE = /@(\d{4}-\d{2}-\d{2})/;
@@ -9,13 +9,13 @@ export function parseStreamLine(streamId: string, line: string): Task | null {
   if (!m) return null;
 
   const checked = m[1] === 'x' || m[1] === 'X';
-  let title = m[2] ?? '';
+  const rest = m[2] ?? '';
 
-  const deadline = DEADLINE_RE.exec(title)?.[1];
-  const estStr = ESTIMATE_RE.exec(title)?.[1];
-  const estimateHours = estStr !== undefined ? Number(estStr) : undefined;
+  const rawDeadline = DEADLINE_RE.exec(rest)?.[1];
+  const estStr = ESTIMATE_RE.exec(rest)?.[1];
 
-  title = title.replace(DEADLINE_RE, '').replace(ESTIMATE_RE, '').replace(/\s+/g, ' ').trim();
+  const title = rest.replace(DEADLINE_RE, '').replace(ESTIMATE_RE, '').replace(/\s+/g, ' ').trim();
+  if (title === '') return null;
 
   const task: Task = {
     id: `folder:${streamId}:${title}`,
@@ -25,8 +25,11 @@ export function parseStreamLine(streamId: string, line: string): Task | null {
     status: checked ? 'done' : 'todo',
     spentHours: 0,
   };
-  if (deadline !== undefined) task.deadline = deadline;
-  if (estimateHours !== undefined) task.estimateHours = estimateHours;
+  // Keep the deadline only if it is a real calendar date (round-trips through core's UTC parse).
+  if (rawDeadline !== undefined && toISODate(parseISODate(rawDeadline)) === rawDeadline) {
+    task.deadline = rawDeadline;
+  }
+  if (estStr !== undefined) task.estimateHours = Number(estStr);
   return task;
 }
 

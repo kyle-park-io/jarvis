@@ -36,6 +36,13 @@ describe('pullFolderTasks', () => {
   it('returns an empty array when the directory does not exist', () => {
     expect(pullFolderTasks(path.join(dir, 'nope'))).toEqual([]);
   });
+
+  it('ignores directories ending in .md and files named exactly ".md"', () => {
+    fs.mkdirSync(path.join(dir, 'subdir.md')); // a DIRECTORY ending in .md
+    writeStream('.md', '- [ ] orphan'); // a file literally named ".md"
+    writeStream('real.md', '- [ ] Real task');
+    expect(pullFolderTasks(dir).map((t) => t.id)).toEqual(['folder:real:Real task']);
+  });
 });
 
 describe('folderConnector', () => {

@@ -44,6 +44,16 @@ describe('parseStreamLine', () => {
     expect(parseStreamLine('s', 'just prose')).toBeNull();
     expect(parseStreamLine('s', '- not a checkbox')).toBeNull();
   });
+
+  it('returns null for a task line with only metadata (empty title)', () => {
+    expect(parseStreamLine('s', '- [ ] @2026-07-20 ~4h')).toBeNull();
+  });
+
+  it('drops a calendar-invalid deadline but keeps the task', () => {
+    const t = parseStreamLine('s', '- [ ] Ship @2026-13-45');
+    expect(t?.title).toBe('Ship');
+    expect(t?.deadline).toBeUndefined();
+  });
 });
 
 describe('parseStreamFile', () => {
