@@ -2,7 +2,8 @@
 
 A personal chief-of-staff task agent. It manages several concurrent work streams by their **weekly time budgets** — computing "how much of what to do today," detecting dropped balls (cracks), and executing some tasks on your behalf. For developers and non-developers alike.
 
-> **Full spec + the "why" behind every decision: `design/jarvis-task-agent-design.md`** (Korean; kept local, not committed to this public repo).
+> **Full spec + the "why" behind every decision: `design/jarvis-task-agent-design.md`** (Korean; kept local, not committed — it carries personal work context).
+> **Implementation plans are committed** in [`docs/plans/`](./docs/plans/) (English). Only the personal-context spec stays local in `design/`.
 > This file is the summary + working rules. Read the design doc when you need detail.
 
 ## Language convention
