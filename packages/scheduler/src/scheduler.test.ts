@@ -38,4 +38,20 @@ describe('startScheduler', () => {
     expect(handle.nextRun()).toBeInstanceOf(Date);
     handle.stop();
   });
+
+  it('routes a scheduled callback error to onError instead of leaving it unhandled', async () => {
+    const caught = await new Promise<unknown>((resolve) => {
+      const handle = startScheduler({
+        onDailyPlan: () => {
+          throw new Error('boom');
+        },
+        onError: (error) => {
+          handle.stop();
+          resolve(error);
+        },
+        dailyPlanCron: '* * * * * *',
+      });
+    });
+    expect(caught).toBeInstanceOf(Error);
+  }, 4000);
 });

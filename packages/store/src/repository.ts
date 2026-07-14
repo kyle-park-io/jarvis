@@ -1,5 +1,5 @@
 import type { DB } from './db';
-import type { Task, TimeLog } from '@jarvis/core';
+import type { Task, TimeLog, TaskSource } from '@jarvis/core';
 import { weekStart, parseISODate, toISODate } from '@jarvis/core';
 
 interface TaskRow {
@@ -97,7 +97,7 @@ export function getWeekLogs(db: DB, referenceDate: string): TimeLog[] {
   });
 }
 
-export function syncSourceTasks(db: DB, source: string, tasks: Task[]): void {
+export function syncSourceTasks(db: DB, source: TaskSource, tasks: Task[]): void {
   const keep = new Set(tasks.map((t) => t.id));
   const apply = db.transaction(() => {
     for (const task of tasks) upsertTask(db, task);
