@@ -11,3 +11,18 @@ export {
   type GithubIssue,
   type GithubConnectorOptions,
 } from './github';
+export {
+  gmailConnector,
+  gmailThreadsToTasks,
+  extractThreads,
+  type GmailThread,
+  type GmailConnectorOptions,
+} from './gmail';
+export {
+  calendarCommittedHours,
+  eventsToCommittedHours,
+  extractEvents,
+  type EventDateTime,
+  type CalendarEvent,
+  type CalendarCommittedHoursOptions,
+} from './calendar';
