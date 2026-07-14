@@ -17,6 +17,16 @@ describe('parseMcpJson', () => {
     expect(() => parseMcpJson({ content: [{ type: 'image' }] })).toThrow();
     expect(() => parseMcpJson({})).toThrow();
   });
+
+  it('throws a clean error on a non-object result', () => {
+    expect(() => parseMcpJson(null)).toThrow('not an object');
+    expect(() => parseMcpJson('nope')).toThrow('not an object');
+  });
+
+  it('throws no-text-content on non-array or malformed content blocks', () => {
+    expect(() => parseMcpJson({ content: 'not-an-array' })).toThrow('no text content');
+    expect(() => parseMcpJson({ content: [null] })).toThrow('no text content');
+  });
 });
 
 describe('mcpConnector', () => {

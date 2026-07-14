@@ -1,22 +1,30 @@
 import type { Task } from '@jarvis/core';
 import type { Connector, ConnectorId } from './types';
 
-interface McpToolResult {
-  content?: Array<{ type?: string; text?: string }>;
-  isError?: boolean;
-}
-
 /**
  * Extract and JSON-parse the payload of a standard MCP tool result
  * (`{ content: [{ type: 'text', text }], isError }`). Throws on an error
  * result or when there is no text content.
  */
 export function parseMcpJson(raw: unknown): unknown {
-  const result = raw as McpToolResult;
+  if (raw === null || typeof raw !== 'object') {
+    throw new Error('MCP tool result is not an object');
+  }
+  const result = raw as { content?: unknown; isError?: unknown };
   if (result.isError === true) {
     throw new Error('MCP tool returned an error result');
   }
-  const text = result.content?.find((block) => block.type === 'text')?.text;
+  const blocks: unknown[] = Array.isArray(result.content) ? result.content : [];
+  let text: string | undefined;
+  for (const block of blocks) {
+    if (block !== null && typeof block === 'object') {
+      const b = block as { type?: unknown; text?: unknown };
+      if (b.type === 'text' && typeof b.text === 'string') {
+        text = b.text;
+        break;
+      }
+    }
+  }
   if (text === undefined) {
     throw new Error('MCP tool result has no text content');
   }
