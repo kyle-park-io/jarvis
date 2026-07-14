@@ -57,4 +57,14 @@ describe('writePlan', () => {
     expect(file).toBe(path.join(dir, 'plans', '2026-07-14.md'));
     expect(fs.readFileSync(file, 'utf8')).toContain('## Work — 2.5h');
   });
+
+  it('creates the plans directory if it does not exist yet', () => {
+    const fresh = fs.mkdtempSync(path.join(os.tmpdir(), 'jarvis-plan-fresh-'));
+    try {
+      const file = writePlan(fresh, allocation, [], {});
+      expect(fs.existsSync(file)).toBe(true);
+    } finally {
+      fs.rmSync(fresh, { recursive: true, force: true });
+    }
+  });
 });

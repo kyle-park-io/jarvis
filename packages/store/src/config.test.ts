@@ -69,4 +69,12 @@ streams:
 `);
     expect(() => loadConfig(dir)).toThrow();
   });
+
+  it('rejects an unknown top-level field (strict)', () => {
+    writeConfig(`
+dailyCapcityHours: 6
+streams: []
+`);
+    expect(() => loadConfig(dir)).toThrow();
+  });
 });

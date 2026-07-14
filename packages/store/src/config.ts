@@ -26,7 +26,7 @@ export const ConfigSchema = z.object({
   fallingBehindPct: z.number().min(0).max(100).default(25),
   droppedBallDays: z.number().int().nonnegative().default(1),
   streams: z.array(StreamSchema).default([]),
-});
+}).strict();
 
 export type JarvisConfig = z.infer<typeof ConfigSchema>;
 

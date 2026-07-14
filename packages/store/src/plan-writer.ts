@@ -36,6 +36,7 @@ export function writePlan(
   streamNames: Record<string, string>,
 ): string {
   const file = path.join(dataRoot, 'plans', `${allocation.date}.md`);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, renderPlan(allocation, alerts, streamNames), 'utf8');
   return file;
 }

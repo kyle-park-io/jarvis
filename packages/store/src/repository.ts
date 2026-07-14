@@ -71,7 +71,7 @@ function rowToTask(r: TaskRow): Task {
 }
 
 export function getTasks(db: DB): Task[] {
-  const rows = db.prepare('SELECT * FROM tasks').all() as TaskRow[];
+  const rows = db.prepare('SELECT * FROM tasks ORDER BY id').all() as TaskRow[];
   return rows.map(rowToTask);
 }
 
