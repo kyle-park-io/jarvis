@@ -25,4 +25,12 @@ describe('rankTasks', () => {
     ];
     expect(rankTasks('s1', tasks).map((t) => t.id)).toEqual(['d', 'b', 'a', 'c']);
   });
+
+  it('treats a missing estimate as 0 when breaking a deadline tie', () => {
+    const tasks = [
+      task({ id: 'p', deadline: '2026-07-16' }), // no estimate -> 0
+      task({ id: 'q', deadline: '2026-07-16', estimateHours: 1 }),
+    ];
+    expect(rankTasks('s1', tasks).map((t) => t.id)).toEqual(['q', 'p']);
+  });
 });

@@ -38,4 +38,15 @@ describe('deadlinePressure', () => {
     const tasks = [task({ id: 'a', deadline: '2026-07-15' })];
     expect(deadlinePressure('s1', tasks, today, 5)).toBe(0);
   });
+
+  it('excludes past-due tasks (negative daysUntil)', () => {
+    const tasks = [task({ id: 'x', deadline: '2026-07-10', estimateHours: 5 })]; // 4 days ago
+    expect(deadlinePressure('s1', tasks, today, 5)).toBe(0);
+  });
+
+  it('includes a task due exactly at the horizon boundary', () => {
+    // today + 5 days = 2026-07-19 -> d = 5 == horizon -> included: 6 / (5 + 1) = 1
+    const tasks = [task({ id: 'edge', deadline: '2026-07-19', estimateHours: 6 })];
+    expect(deadlinePressure('s1', tasks, today, 5)).toBeCloseTo(1);
+  });
 });
