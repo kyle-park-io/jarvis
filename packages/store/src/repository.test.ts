@@ -82,8 +82,8 @@ describe('repository', () => {
     upsertTask(db, task({ id: 'github:s:1', title: 'gh', source: 'github' }));
 
     syncSourceTasks(db, 'folder', [
-      task({ id: 'folder:s:A', title: 'A2', status: 'done' }), // updated
-      task({ id: 'folder:s:C', title: 'C' }), // new
+      task({ id: 'folder:s:A', title: 'A2', status: 'done', source: 'folder' }), // updated
+      task({ id: 'folder:s:C', title: 'C', source: 'folder' }), // new
       // B is gone
     ]);
 
@@ -91,5 +91,7 @@ describe('repository', () => {
     expect(got.map((t) => t.id).sort()).toEqual(['folder:s:A', 'folder:s:C', 'github:s:1']);
     expect(got.find((t) => t.id === 'folder:s:A')?.title).toBe('A2');
     expect(got.find((t) => t.id === 'folder:s:A')?.status).toBe('done');
+    expect(got.find((t) => t.id === 'folder:s:A')?.source).toBe('folder');
+    expect(got.find((t) => t.id === 'folder:s:C')?.source).toBe('folder');
   });
 });
