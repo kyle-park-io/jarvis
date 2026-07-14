@@ -17,7 +17,7 @@ export function openDb(dataRoot: string): DB {
 function migrate(db: DB): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS tasks (
-      id TEXT PRIMARY KEY,
+      id TEXT PRIMARY KEY NOT NULL,
       stream_id TEXT NOT NULL,
       title TEXT NOT NULL,
       source TEXT NOT NULL,
