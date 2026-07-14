@@ -85,4 +85,34 @@ streams:
     expect(code).toBe(1);
     expect(output).toContain('Unknown command: bogus');
   });
+
+  it('log records hours and confirms', async () => {
+    const code = await runCli(['log', 'work', '3'], deps());
+    expect(code).toBe(0);
+    expect(output).toContain('Logged 3h to work on 2026-07-14.');
+  });
+
+  it('log without enough args returns 1 with usage', async () => {
+    const code = await runCli(['log', 'work'], deps());
+    expect(code).toBe(1);
+    expect(output).toContain('Usage: jarvis log');
+  });
+
+  it('log rejects invalid hours', async () => {
+    const code = await runCli(['log', 'work', 'abc'], deps());
+    expect(code).toBe(1);
+    expect(output).toContain('Invalid hours: abc');
+  });
+
+  it('logged hours reduce the stream target on the next plan (self-correction)', async () => {
+    let before = '';
+    await runCli(['today'], { ...deps(), out: (t) => (before += t) });
+    expect(before).toContain('## Work — 5h');
+
+    await runCli(['log', 'work', '8'], deps());
+
+    let after = '';
+    await runCli(['today'], { ...deps(), out: (t) => (after += t) });
+    expect(after).toContain('## Work — 3h');
+  });
 });
