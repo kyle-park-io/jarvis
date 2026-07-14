@@ -13,8 +13,10 @@ runCli(process.argv.slice(2), {
   today: toISODate(new Date()),
   out: (text) => process.stdout.write(text),
 })
-  .then((code) => process.exit(code))
+  .then((code) => {
+    process.exitCode = code;
+  })
   .catch((error: unknown) => {
     process.stderr.write(`Error: ${error instanceof Error ? error.message : String(error)}\n`);
-    process.exit(1);
+    process.exitCode = 1;
   });
