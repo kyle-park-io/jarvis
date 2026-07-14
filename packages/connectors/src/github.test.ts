@@ -6,7 +6,7 @@ describe('githubIssuesToTasks', () => {
     const issues: GithubIssue[] = [
       { number: 42, title: 'Fix bug', state: 'open', repository: 'kyle/repo', html_url: 'https://x/42' },
     ];
-    expect(githubIssuesToTasks(issues, 'mantle')).toEqual([
+    expect(githubIssuesToTasks(issues, 'mantle')).toStrictEqual([
       {
         id: 'github:kyle/repo#42',
         streamId: 'mantle',
@@ -21,7 +21,7 @@ describe('githubIssuesToTasks', () => {
 
   it('maps a closed issue with no repo/url to a done task without sourceRef', () => {
     const tasks = githubIssuesToTasks([{ number: 7, title: 'Old', state: 'closed' }], 's');
-    expect(tasks[0]).toEqual({
+    expect(tasks[0]).toStrictEqual({
       id: 'github:#7',
       streamId: 's',
       title: 'Old',
@@ -29,6 +29,7 @@ describe('githubIssuesToTasks', () => {
       status: 'done',
       spentHours: 0,
     });
+    expect(Object.keys(tasks[0] ?? {})).not.toContain('sourceRef');
   });
 });
 
