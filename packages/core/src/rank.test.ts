@@ -33,4 +33,12 @@ describe('rankTasks', () => {
     ];
     expect(rankTasks('s1', tasks).map((t) => t.id)).toEqual(['q', 'p']);
   });
+
+  it('orders two undated tasks by estimate, treating a missing estimate as 0', () => {
+    const tasks = [
+      task({ id: 'noEst' }), // undated, no estimate -> 0
+      task({ id: 'withEst', estimateHours: 3 }), // undated, estimate 3
+    ];
+    expect(rankTasks('s1', tasks).map((t) => t.id)).toEqual(['withEst', 'noEst']);
+  });
 });

@@ -55,6 +55,17 @@ describe('scanDeadlineRisks', () => {
     };
     expect(scanDeadlineRisks(tasks, allocation, today, 5)).toEqual([]);
   });
+
+  it('does not flag a done task even if dated within horizon', () => {
+    const tasks = [task({ id: 't1', streamId: 's2', deadline: '2026-07-15', estimateHours: 4, status: 'done' })];
+    const allocation: Allocation = {
+      date: '2026-07-14',
+      capacityHours: 8,
+      lines: [{ streamId: 's1', targetHours: 5, tasks: [] }],
+      overcommitted: false,
+    };
+    expect(scanDeadlineRisks(tasks, allocation, '2026-07-14', 5)).toEqual([]);
+  });
 });
 
 describe('scanDroppedBalls', () => {
