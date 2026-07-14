@@ -2,6 +2,7 @@ import type { WorkStream, Task, TimeLog, AllocationLine, Allocation, Alert } fro
 import { countRemainingWorkdays } from './dates';
 import { rankTasks } from './rank';
 import { deadlinePressure } from './pressure';
+import { scanFallingBehind, scanDeadlineRisks, scanDroppedBalls } from './alerts';
 
 export interface AllocateInput {
   date: string;
@@ -11,6 +12,8 @@ export interface AllocateInput {
   committedHoursToday: number;
   dailyCapacityHours: number;
   deadlineHorizonDays: number;
+  fallingBehindPct?: number; // default 25
+  droppedBallDays?: number; // default 2
 }
 
 export interface AllocateResult {
@@ -26,6 +29,7 @@ interface RawLine {
   stream: WorkStream;
   target: number;
   tasks: Task[];
+  logged: number;
 }
 
 export function allocate(input: AllocateInput): AllocateResult {
@@ -44,7 +48,7 @@ export function allocate(input: AllocateInput): AllocateResult {
     const basePace = remainingWorkdays > 0 ? remainingWeekly / remainingWorkdays : remainingWeekly;
     const pressure = deadlinePressure(s.id, tasks, date, deadlineHorizonDays);
     const target = Math.min(remainingWeekly, Math.max(basePace, pressure));
-    raw.push({ stream: s, target, tasks: rankTasks(s.id, tasks) });
+    raw.push({ stream: s, target, tasks: rankTasks(s.id, tasks), logged });
   }
 
   const totalTarget = raw.reduce((sum, r) => sum + r.target, 0);
@@ -65,5 +69,15 @@ export function allocate(input: AllocateInput): AllocateResult {
     .map((r) => ({ streamId: r.stream.id, targetHours: round1(r.target), tasks: r.tasks }))
     .filter((l) => l.targetHours > 0);
 
-  return { allocation: { date, capacityHours: capacity, lines, overcommitted }, alerts };
+  const allocation: Allocation = { date, capacityHours: capacity, lines, overcommitted };
+
+  const fallingBehindPct = input.fallingBehindPct ?? 25;
+  const droppedBallDays = input.droppedBallDays ?? 2;
+  for (const r of raw) {
+    alerts.push(...scanFallingBehind(r.stream, r.logged, date, fallingBehindPct));
+  }
+  alerts.push(...scanDeadlineRisks(tasks, allocation, date, deadlineHorizonDays));
+  alerts.push(...scanDroppedBalls(tasks, date, droppedBallDays));
+
+  return { allocation, alerts };
 }

@@ -143,4 +143,28 @@ describe('allocate', () => {
     // remaining 0.12 over 4 workdays -> ~0.03 -> round1 -> 0 -> line must be omitted
     expect(res.allocation.lines).toEqual([]);
   });
+
+  it('surfaces falling-behind and dropped-ball alerts through allocate()', () => {
+    const res = allocate(
+      baseInput({
+        date: '2026-07-15', // Wednesday
+        streams: [stream({ id: 's1', weeklyBudgetHours: 10 })],
+        weekLogs: [{ date: '2026-07-13', streamId: 's1', hours: 1 }], // behind
+        tasks: [
+          {
+            id: 'w',
+            streamId: 's1',
+            title: 'reply',
+            source: 'github',
+            status: 'todo',
+            spentHours: 0,
+            waitingSince: '2026-07-10',
+          },
+        ],
+      }),
+    );
+    const types = res.alerts.map((a) => a.type);
+    expect(types).toContain('falling_behind');
+    expect(types).toContain('dropped_ball');
+  });
 });
