@@ -179,6 +179,30 @@ describe('allocate', () => {
     expect(res.allocation.overcommitted).toBe(false);
   });
 
+  it('still applies deadline pressure on a non-workday even though base pace is zero', () => {
+    // 2026-07-18 is a Saturday -> base pace 0; a Monday deadline still drives work.
+    const res = allocate(
+      baseInput({
+        date: '2026-07-18',
+        streams: [stream({ id: 's1', weeklyBudgetHours: 20 })],
+        tasks: [
+          {
+            id: 't1',
+            streamId: 's1',
+            title: 'due monday',
+            source: 'manual',
+            status: 'todo',
+            spentHours: 0,
+            estimateHours: 4,
+            deadline: '2026-07-20', // d=2 -> pressure 4/(2+1) ≈ 1.33
+          },
+        ],
+      }),
+    );
+    expect(res.allocation.lines[0]?.streamId).toBe('s1');
+    expect(res.allocation.lines[0]?.targetHours).toBeGreaterThan(0);
+  });
+
   it('floors capacity at zero when committed exceeds daily capacity', () => {
     const res = allocate(
       baseInput({ dailyCapacityHours: 8, committedHoursToday: 10, streams: [stream({ id: 's1', weeklyBudgetHours: 20 })] }),
