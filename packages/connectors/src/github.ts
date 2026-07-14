@@ -26,14 +26,33 @@ export function githubIssuesToTasks(issues: GithubIssue[], streamId: string): Ta
   });
 }
 
-export function extractIssues(parsed: unknown): GithubIssue[] {
-  if (Array.isArray(parsed)) return parsed as GithubIssue[];
-  if (parsed !== null && typeof parsed === 'object') {
-    const wrapped = parsed as { items?: unknown; issues?: unknown };
-    if (Array.isArray(wrapped.items)) return wrapped.items as GithubIssue[];
-    if (Array.isArray(wrapped.issues)) return wrapped.issues as GithubIssue[];
+function toGithubIssue(raw: unknown): GithubIssue {
+  if (raw === null || typeof raw !== 'object') {
+    throw new Error(`Malformed GitHub issue (not an object): ${JSON.stringify(raw)}`);
   }
-  throw new Error('Unexpected GitHub MCP result shape (expected an array, or { items } / { issues })');
+  const issue = raw as { number?: unknown; title?: unknown; state?: unknown; repository?: unknown; html_url?: unknown };
+  if (typeof issue.number !== 'number' || typeof issue.title !== 'string' || typeof issue.state !== 'string') {
+    throw new Error(`Malformed GitHub issue (missing number/title/state): ${JSON.stringify(raw)}`);
+  }
+  const result: GithubIssue = { number: issue.number, title: issue.title, state: issue.state };
+  if (typeof issue.repository === 'string') result.repository = issue.repository;
+  if (typeof issue.html_url === 'string') result.html_url = issue.html_url;
+  return result;
+}
+
+export function extractIssues(parsed: unknown): GithubIssue[] {
+  let rawArray: unknown[];
+  if (Array.isArray(parsed)) {
+    rawArray = parsed;
+  } else if (parsed !== null && typeof parsed === 'object') {
+    const wrapped = parsed as { items?: unknown; issues?: unknown };
+    if (Array.isArray(wrapped.items)) rawArray = wrapped.items;
+    else if (Array.isArray(wrapped.issues)) rawArray = wrapped.issues;
+    else throw new Error('Unexpected GitHub MCP result shape (expected an array, or { items } / { issues })');
+  } else {
+    throw new Error('Unexpected GitHub MCP result shape (expected an array, or { items } / { issues })');
+  }
+  return rawArray.map(toGithubIssue);
 }
 
 export interface GithubConnectorOptions {

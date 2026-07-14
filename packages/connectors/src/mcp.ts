@@ -11,9 +11,6 @@ export function parseMcpJson(raw: unknown): unknown {
     throw new Error('MCP tool result is not an object');
   }
   const result = raw as { content?: unknown; isError?: unknown };
-  if (result.isError === true) {
-    throw new Error('MCP tool returned an error result');
-  }
   const blocks: unknown[] = Array.isArray(result.content) ? result.content : [];
   let text: string | undefined;
   for (const block of blocks) {
@@ -25,10 +22,17 @@ export function parseMcpJson(raw: unknown): unknown {
       }
     }
   }
+  if (result.isError === true) {
+    throw new Error(`MCP tool returned an error result${text !== undefined ? `: ${text}` : ''}`);
+  }
   if (text === undefined) {
     throw new Error('MCP tool result has no text content');
   }
-  return JSON.parse(text);
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    throw new Error(`MCP tool result is not valid JSON: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 export interface McpConnectorOptions {

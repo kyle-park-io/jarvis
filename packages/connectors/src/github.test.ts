@@ -34,17 +34,25 @@ describe('githubIssuesToTasks', () => {
 });
 
 describe('extractIssues', () => {
-  it('accepts a bare array', () => {
-    expect(extractIssues([{ number: 1 }])).toEqual([{ number: 1 }]);
+  it('accepts a bare array of valid issues', () => {
+    const issue = { number: 1, title: 'A', state: 'open' };
+    expect(extractIssues([issue])).toEqual([issue]);
   });
   it('accepts { items } and { issues } wrappers', () => {
-    expect(extractIssues({ items: [{ number: 2 }] })).toEqual([{ number: 2 }]);
-    expect(extractIssues({ issues: [{ number: 3 }] })).toEqual([{ number: 3 }]);
+    const i2 = { number: 2, title: 'B', state: 'open' };
+    const i3 = { number: 3, title: 'C', state: 'closed' };
+    expect(extractIssues({ items: [i2] })).toEqual([i2]);
+    expect(extractIssues({ issues: [i3] })).toEqual([i3]);
   });
-  it('throws on an unexpected shape', () => {
+  it('throws on an unexpected wrapper shape', () => {
     expect(() => extractIssues(null)).toThrow();
     expect(() => extractIssues('nope')).toThrow();
     expect(() => extractIssues({})).toThrow();
+  });
+  it('throws on a malformed element (null, or missing number/title)', () => {
+    expect(() => extractIssues([null])).toThrow('Malformed');
+    expect(() => extractIssues([{ title: 'no number', state: 'open' }])).toThrow('Malformed');
+    expect(() => extractIssues([{ number: 1, state: 'open' }])).toThrow('Malformed');
   });
 });
 

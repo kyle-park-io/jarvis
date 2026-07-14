@@ -27,6 +27,13 @@ describe('parseMcpJson', () => {
     expect(() => parseMcpJson({ content: 'not-an-array' })).toThrow('no text content');
     expect(() => parseMcpJson({ content: [null] })).toThrow('no text content');
   });
+
+  it('includes the server error text when isError is set', () => {
+    expect(() => parseMcpJson({ isError: true, content: [{ type: 'text', text: 'rate limited' }] })).toThrow('rate limited');
+  });
+  it('throws a clear error when the text is not valid JSON', () => {
+    expect(() => parseMcpJson({ content: [{ type: 'text', text: 'not json' }] })).toThrow('not valid JSON');
+  });
 });
 
 describe('mcpConnector', () => {
