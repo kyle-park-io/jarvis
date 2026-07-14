@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Test / coverage
+coverage/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# Jarvis runtime data lives OUTSIDE this repo (~/jarvis),
+# but ignore any local scratch just in case.
+/data/
+*.db
+
+# Design docs with personal work context — kept out of the public repo
+design/
