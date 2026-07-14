@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { openDatabase, type DB } from './db';
-import { upsertTask, getTasks, addTimeLog, getWeekLogs } from './repository';
+import { upsertTask, getTasks, addTimeLog, getWeekLogs, syncSourceTasks } from './repository';
 import type { Task } from '@jarvis/core';
 
 function task(partial: Partial<Task> & { id: string }): Task {
@@ -74,5 +74,24 @@ describe('repository', () => {
   it('round-trips a task with a sourceRef', () => {
     upsertTask(db, task({ id: 't3', sourceRef: 'github:owner/repo#42' }));
     expect(getTasks(db)[0]?.sourceRef).toBe('github:owner/repo#42');
+  });
+
+  it('syncSourceTasks upserts present tasks and deletes gone ones of the same source, leaving other sources', () => {
+    upsertTask(db, task({ id: 'folder:s:A', title: 'A', source: 'folder' }));
+    upsertTask(db, task({ id: 'folder:s:B', title: 'B', source: 'folder' }));
+    upsertTask(db, task({ id: 'github:s:1', title: 'gh', source: 'github' }));
+
+    syncSourceTasks(db, 'folder', [
+      task({ id: 'folder:s:A', title: 'A2', status: 'done', source: 'folder' }), // updated
+      task({ id: 'folder:s:C', title: 'C', source: 'folder' }), // new
+      // B is gone
+    ]);
+
+    const got = getTasks(db);
+    expect(got.map((t) => t.id).sort()).toEqual(['folder:s:A', 'folder:s:C', 'github:s:1']);
+    expect(got.find((t) => t.id === 'folder:s:A')?.title).toBe('A2');
+    expect(got.find((t) => t.id === 'folder:s:A')?.status).toBe('done');
+    expect(got.find((t) => t.id === 'folder:s:A')?.source).toBe('folder');
+    expect(got.find((t) => t.id === 'folder:s:C')?.source).toBe('folder');
   });
 });

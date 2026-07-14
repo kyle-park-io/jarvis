@@ -1,5 +1,5 @@
 import type { DB } from './db';
-import type { Task, TimeLog } from '@jarvis/core';
+import type { Task, TimeLog, TaskSource } from '@jarvis/core';
 import { weekStart, parseISODate, toISODate } from '@jarvis/core';
 
 interface TaskRow {
@@ -95,4 +95,17 @@ export function getWeekLogs(db: DB, referenceDate: string): TimeLog[] {
     if (r.task_id !== null) log.taskId = r.task_id;
     return log;
   });
+}
+
+export function syncSourceTasks(db: DB, source: TaskSource, tasks: Task[]): void {
+  const keep = new Set(tasks.map((t) => t.id));
+  const apply = db.transaction(() => {
+    for (const task of tasks) upsertTask(db, task);
+    const existing = db.prepare('SELECT id FROM tasks WHERE source = ?').all(source) as { id: string }[];
+    const del = db.prepare('DELETE FROM tasks WHERE id = ?');
+    for (const row of existing) {
+      if (!keep.has(row.id)) del.run(row.id);
+    }
+  });
+  apply();
 }
