@@ -4,7 +4,7 @@ import { VERSION } from './index';
 
 describe('@jarvis/scheduler', () => {
   it('exposes a version', () => {
-    expect(VERSION).toBe('0.0.0');
+    expect(VERSION).toBe('0.1.0');
   });
 
   it('can construct a croner job (dependency loads)', () => {
