@@ -310,7 +310,7 @@ Expected: FAIL — cannot resolve `./dates`.
 const DAY_MS = 86_400_000;
 
 export function parseISODate(iso: string): Date {
-  const [y, m, d] = iso.split('-').map(Number);
+  const [y, m, d] = iso.split('-').map(Number) as [number, number, number];
   return new Date(Date.UTC(y, m - 1, d));
 }
 
