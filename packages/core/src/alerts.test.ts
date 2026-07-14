@@ -71,3 +71,29 @@ describe('scanDroppedBalls', () => {
     expect(alerts[0]?.type).toBe('dropped_ball');
   });
 });
+
+describe('scanFallingBehind edge cases', () => {
+  it('returns nothing when the stream has no workdays this week', () => {
+    const s = stream({ id: 's1', workdays: [], weeklyBudgetHours: 10 });
+    expect(scanFallingBehind(s, 0, '2026-07-15', 25)).toEqual([]);
+  });
+
+  it('stays quiet exactly at the floor boundary', () => {
+    // Wed 2026-07-15, budget 10 -> expected 6, floor = 6 * 0.75 = 4.5
+    const s = stream({ id: 's1', weeklyBudgetHours: 10 });
+    expect(scanFallingBehind(s, 4.5, '2026-07-15', 25)).toEqual([]);
+  });
+});
+
+describe('scanDeadlineRisks edge cases', () => {
+  it('does not flag an overdue task (deadline before today)', () => {
+    const tasks = [task({ id: 't1', streamId: 's2', deadline: '2026-07-10', estimateHours: 4 })];
+    const allocation: Allocation = {
+      date: '2026-07-14',
+      capacityHours: 8,
+      lines: [{ streamId: 's1', targetHours: 5, tasks: [] }],
+      overcommitted: false,
+    };
+    expect(scanDeadlineRisks(tasks, allocation, '2026-07-14', 5)).toEqual([]);
+  });
+});

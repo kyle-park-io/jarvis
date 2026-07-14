@@ -49,4 +49,14 @@ describe('deadlinePressure', () => {
     const tasks = [task({ id: 'edge', deadline: '2026-07-19', estimateHours: 6 })];
     expect(deadlinePressure('s1', tasks, today, 5)).toBeCloseTo(1);
   });
+
+  it('subtracts spent hours from the estimate (remaining work only)', () => {
+    const tasks = [task({ id: 'a', deadline: '2026-07-15', estimateHours: 10, spentHours: 6 })];
+    expect(deadlinePressure('s1', tasks, today, 5)).toBeCloseTo(2); // (10-6)/(1+1)
+  });
+
+  it('clamps to zero when spent meets or exceeds the estimate', () => {
+    const tasks = [task({ id: 'a', deadline: '2026-07-15', estimateHours: 4, spentHours: 4 })];
+    expect(deadlinePressure('s1', tasks, today, 5)).toBe(0);
+  });
 });

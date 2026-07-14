@@ -167,4 +167,32 @@ describe('allocate', () => {
     expect(types).toContain('falling_behind');
     expect(types).toContain('dropped_ball');
   });
+
+  it('demands no base pace on a non-workday (2026-07-18 is a Saturday)', () => {
+    const res = allocate(
+      baseInput({
+        date: '2026-07-18',
+        streams: [stream({ id: 's1', weeklyBudgetHours: 20 })],
+      }),
+    );
+    expect(res.allocation.lines).toEqual([]);
+    expect(res.allocation.overcommitted).toBe(false);
+  });
+
+  it('floors capacity at zero when committed exceeds daily capacity', () => {
+    const res = allocate(
+      baseInput({ dailyCapacityHours: 8, committedHoursToday: 10, streams: [stream({ id: 's1', weeklyBudgetHours: 20 })] }),
+    );
+    expect(res.allocation.capacityHours).toBe(0);
+  });
+
+  it('floors remaining weekly budget at zero when overlogged', () => {
+    const res = allocate(
+      baseInput({
+        streams: [stream({ id: 's1', weeklyBudgetHours: 10 })],
+        weekLogs: [{ date: '2026-07-13', streamId: 's1', hours: 15 }],
+      }),
+    );
+    expect(res.allocation.lines).toEqual([]);
+  });
 });

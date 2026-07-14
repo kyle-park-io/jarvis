@@ -45,7 +45,7 @@ export function allocate(input: AllocateInput): AllocateResult {
       .reduce((sum, l) => sum + l.hours, 0);
     const remainingWeekly = Math.max(0, s.weeklyBudgetHours - logged);
     const remainingWorkdays = countRemainingWorkdays(date, s.workdays);
-    const basePace = remainingWorkdays > 0 ? remainingWeekly / remainingWorkdays : remainingWeekly;
+    const basePace = remainingWorkdays > 0 ? remainingWeekly / remainingWorkdays : 0;
     const pressure = deadlinePressure(s.id, tasks, date, deadlineHorizonDays);
     const target = Math.min(remainingWeekly, Math.max(basePace, pressure));
     raw.push({ stream: s, target, tasks: rankTasks(s.id, tasks), logged });
@@ -53,7 +53,7 @@ export function allocate(input: AllocateInput): AllocateResult {
 
   const totalTarget = raw.reduce((sum, r) => sum + r.target, 0);
   let overcommitted = false;
-  if (totalTarget > capacity && totalTarget > 0) {
+  if (totalTarget > capacity) {
     overcommitted = true;
     const scale = capacity / totalTarget;
     for (const r of raw) r.target *= scale;

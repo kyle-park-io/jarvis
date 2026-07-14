@@ -14,7 +14,7 @@ export function deadlinePressure(
     if (!t.deadline) continue;
     const d = daysUntil(today, t.deadline);
     if (d < 0 || d > horizonDays) continue;
-    const estimate = t.estimateHours ?? 0;
+    const estimate = Math.max(0, (t.estimateHours ?? 0) - t.spentHours);
     demand += estimate / (d + 1); // inclusive spread; d>=0 so denominator >=1
   }
   return demand;
