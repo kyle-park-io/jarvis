@@ -310,7 +310,7 @@ Expected: FAIL — cannot resolve `./dates`.
 const DAY_MS = 86_400_000;
 
 export function parseISODate(iso: string): Date {
-  const [y, m, d] = iso.split('-').map(Number);
+  const [y, m, d] = iso.split('-').map(Number) as [number, number, number];
   return new Date(Date.UTC(y, m - 1, d));
 }
 
@@ -530,7 +530,7 @@ export function deadlinePressure(
     if (!t.deadline) continue;
     const d = daysUntil(today, t.deadline);
     if (d < 0 || d > horizonDays) continue;
-    const estimate = t.estimateHours ?? 0;
+    const estimate = Math.max(0, (t.estimateHours ?? 0) - t.spentHours); // remaining work only
     demand += estimate / (d + 1); // inclusive spread; d>=0 so denominator >=1
   }
   return demand;
@@ -760,7 +760,7 @@ export function allocate(input: AllocateInput): AllocateResult {
       .reduce((sum, l) => sum + l.hours, 0);
     const remainingWeekly = Math.max(0, s.weeklyBudgetHours - logged);
     const remainingWorkdays = countRemainingWorkdays(date, s.workdays);
-    const basePace = remainingWorkdays > 0 ? remainingWeekly / remainingWorkdays : remainingWeekly;
+    const basePace = remainingWorkdays > 0 ? remainingWeekly / remainingWorkdays : 0;
     const pressure = deadlinePressure(s.id, tasks, date, deadlineHorizonDays);
     const target = Math.min(remainingWeekly, Math.max(basePace, pressure));
     raw.push({ stream: s, target, tasks: rankTasks(s.id, tasks) });
@@ -768,7 +768,7 @@ export function allocate(input: AllocateInput): AllocateResult {
 
   const totalTarget = raw.reduce((sum, r) => sum + r.target, 0);
   let overcommitted = false;
-  if (totalTarget > capacity && totalTarget > 0) {
+  if (totalTarget > capacity) {
     overcommitted = true;
     const scale = capacity / totalTarget;
     for (const r of raw) r.target *= scale;
@@ -780,9 +780,9 @@ export function allocate(input: AllocateInput): AllocateResult {
   }
 
   const lines: AllocationLine[] = raw
-    .filter((r) => r.target > 0.01)
     .sort((a, b) => b.target - a.target)
-    .map((r) => ({ streamId: r.stream.id, targetHours: round1(r.target), tasks: r.tasks }));
+    .map((r) => ({ streamId: r.stream.id, targetHours: round1(r.target), tasks: r.tasks }))
+    .filter((l) => l.targetHours > 0);
 
   return { allocation: { date, capacityHours: capacity, lines, overcommitted }, alerts };
 }
@@ -1025,9 +1025,9 @@ raw.push({ stream: s, target, tasks: rankTasks(s.id, tasks), logged });
 Then after the overcommit block, build `lines` first, then run the scanners (deadline risk needs the finished `allocation`):
 ```ts
   const lines: AllocationLine[] = raw
-    .filter((r) => r.target > 0.01)
     .sort((a, b) => b.target - a.target)
-    .map((r) => ({ streamId: r.stream.id, targetHours: round1(r.target), tasks: r.tasks }));
+    .map((r) => ({ streamId: r.stream.id, targetHours: round1(r.target), tasks: r.tasks }))
+    .filter((l) => l.targetHours > 0);
 
   const allocation: Allocation = { date, capacityHours: capacity, lines, overcommitted };
 
