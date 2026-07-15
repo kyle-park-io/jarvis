@@ -70,14 +70,3 @@ export function createOAuthClient(params: {
   });
   return client;
 }
-
-/** Bearer provider for the MCP transport: an auto-refreshing access token. */
-export function googleAuthProvider(client: OAuth2Client): { token: () => Promise<string> } {
-  return {
-    token: async () => {
-      const { token } = await client.getAccessToken();
-      if (!token) throw new Error('Google access token unavailable (run `jarvis auth google`)');
-      return token;
-    },
-  };
-}

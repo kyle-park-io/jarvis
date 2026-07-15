@@ -1,7 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { calendarCommittedHours } from '@jarvis/connectors';
-import { createOAuthClient, googleAuthProvider, googleClientConfigFromEnv, hasGoogleAuth } from './google-auth';
+import { createOAuthClient, googleClientConfigFromEnv, hasGoogleAuth } from './google-auth';
 
 export const CALENDAR_MCP_URL = 'https://calendarmcp.googleapis.com/mcp/v1';
 
@@ -33,8 +33,20 @@ export function createCalendarProvider(params: {
     if (client) return client;
     if (!connecting) {
       connecting = (async () => {
+        // Fetch a valid access token (refreshing + persisting via the client's
+        // 'tokens' listener if the stored one has expired). It's valid ~1h —
+        // longer than any single CLI run — so a static Bearer header suffices,
+        // exactly like the GitHub connector.
+        const { token } = await oauth.getAccessToken();
+        if (token === null || token === undefined) {
+          throw new Error('Google access token unavailable — run `jarvis auth google`');
+        }
         const c = new Client({ name: 'jarvis', version: '0.1.0' });
-        await c.connect(new StreamableHTTPClientTransport(new URL(url), { authProvider: googleAuthProvider(oauth) as unknown as any }));
+        await c.connect(
+          new StreamableHTTPClientTransport(new URL(url), {
+            requestInit: { headers: { Authorization: `Bearer ${token}` } },
+          }),
+        );
         client = c;
         return c;
       })();
