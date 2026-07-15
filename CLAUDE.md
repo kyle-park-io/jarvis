@@ -36,6 +36,14 @@ apps/{cli, web, bot, mcp}
 
 Phase 1 intelligent planner (MVP, read-only) → Phase 2 semi-auto (drafts + isolated-branch → draft PR, where **the PR itself is the approval gate**) → Phase 3 autonomous.
 
+## Versioning & release
+
+Pre-1.0, unreleased. All packages are `private` at `0.0.0`; nothing is published or tagged yet. SemVer is declared (see `CHANGELOG.md`) but not yet practiced.
+
+- **Scheme: git tags, no tooling.** To release: cut `CHANGELOG.md`'s `[Unreleased]` into `## [x.y.z] - YYYY-MM-DD`, bump the workspace `package.json` versions, then `git tag vX.Y.Z` + a GitHub Release. Version-automation (changesets etc.) waits until we publish to npm — YAGNI until then.
+- **Milestones:** `v0.1.0` = first tagged MVP release → … → `v1.0.0` = first stable.
+- **README at v1.0.0:** at v1.0.0 the root `README.md` becomes a polished, multi-language landing page (in the spirit of [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-design-md)). GitHub markdown is static, so "language selection" = a language-switcher row at the top linking per-language files. Languages: **English (default, `README.md`), Korean, Chinese, Japanese**, with translations under `docs/i18n/README.<lang>.md` (`ko` / `zh` / `ja`).
+
 ## Engineering principles
 
 These are SOLID applied to this codebase, plus the ones that matter more for an agent. Concrete and checkable — not slogans.
@@ -53,4 +61,4 @@ These are SOLID applied to this codebase, plus the ones that matter more for an 
 - **Phase 2 execution runs only within a config allowlist (permitted repos / task types) + audit log.** `main` never changes until a human merges.
 - Prefer human-readable output — also emit state as `plans/*.md` (the folder is the dashboard).
 - When a decision changes, update the design doc first, then refresh this summary.
-- **Changelog:** every PR adds a one-line entry to `CHANGELOG.md` under the matching `[Unreleased]` category (Added / Changed / Fixed / Deprecated / Removed / Security), tagged `(#N)`. On release, cut `[Unreleased]` into `## [x.y.z] - YYYY-MM-DD`. Follows [Keep a Changelog](https://keepachangelog.com).
+- **Changelog:** every PR with a user-facing change adds a one-line entry to `CHANGELOG.md` under the matching `[Unreleased]` category (Added / Changed / Fixed / Deprecated / Removed / Security), tagged `(#N)`; pure docs / meta / CI-only PRs are exempt. Follows [Keep a Changelog](https://keepachangelog.com); release mechanics live in **Versioning & release** above.
