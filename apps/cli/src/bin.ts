@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import path from 'node:path';
 import { toISODate } from '@jarvis/core';
-import { resolveDataRoot, loadConfig } from '@jarvis/store';
+import { resolveDataRoot, loadConfig, type GithubRepoConfig } from '@jarvis/store';
 import { folderConnector } from '@jarvis/connectors';
 import type { Connector } from '@jarvis/connectors';
 import { runCli } from './cli';
@@ -26,7 +26,7 @@ async function main(): Promise<number> {
   // Register the live GitHub connector only when config + token are present.
   // A missing/unreadable config must not break commands like `help`/`log`, so
   // load defensively here; `plan`/`alerts` re-load and surface real errors.
-  let githubRepos: { repo: string; stream: string; state?: string }[] = [];
+  let githubRepos: GithubRepoConfig[] = [];
   try {
     githubRepos = loadConfig(dataRoot).github?.repos ?? [];
   } catch {
@@ -46,7 +46,13 @@ async function main(): Promise<number> {
       out: (text) => process.stdout.write(text),
     });
   } finally {
-    if (github) await github.close();
+    if (github) {
+      try {
+        await github.close();
+      } catch {
+        // Closing the MCP client must never mask the command's own result.
+      }
+    }
   }
 }
 

@@ -10,6 +10,7 @@ describe('parseRepo', () => {
     expect(() => parseRepo('nope')).toThrow(/expected "owner\/name"/);
     expect(() => parseRepo('a/b/c')).toThrow();
     expect(() => parseRepo('/b')).toThrow();
+    expect(() => parseRepo('a/')).toThrow();
   });
 });
 

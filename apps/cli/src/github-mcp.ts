@@ -18,6 +18,8 @@ export function parseRepo(repo: string): { owner: string; repo: string } {
 /** Build the list_issues arguments for one entry (open issues, first page). */
 export function buildListIssuesArgs(entry: GithubRepoEntry): Record<string, unknown> {
   const { owner, repo } = parseRepo(entry.repo);
+  // Default to open issues: a closing issue simply stops being returned and is
+  // then removed by source-authoritative reconciliation (rather than shown as done).
   return { owner, repo, state: entry.state ?? 'open', perPage: 100 };
 }
 
