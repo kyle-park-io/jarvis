@@ -53,3 +53,4 @@ These are SOLID applied to this codebase, plus the ones that matter more for an 
 - **Phase 2 execution runs only within a config allowlist (permitted repos / task types) + audit log.** `main` never changes until a human merges.
 - Prefer human-readable output — also emit state as `plans/*.md` (the folder is the dashboard).
 - When a decision changes, update the design doc first, then refresh this summary.
+- **Changelog:** every PR adds a one-line entry to `CHANGELOG.md` under the matching `[Unreleased]` category (Added / Changed / Fixed / Deprecated / Removed / Security), tagged `(#N)`. On release, cut `[Unreleased]` into `## [x.y.z] - YYYY-MM-DD`. Follows [Keep a Changelog](https://keepachangelog.com).
