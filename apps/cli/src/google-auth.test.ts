@@ -9,6 +9,7 @@ import {
   mergeCreds,
   googleClientConfigFromEnv,
   hasGoogleAuth,
+  createOAuthClient,
 } from './google-auth';
 
 function tmp(): string {
@@ -65,5 +66,15 @@ describe('hasGoogleAuth', () => {
     writeGoogleToken(dir, { refresh_token: 'r' });
     expect(hasGoogleAuth(dir, env)).toBe(true);
     expect(hasGoogleAuth(dir, {})).toBe(false); // no client creds
+  });
+});
+
+describe("createOAuthClient 'tokens' listener", () => {
+  it('persists refreshed tokens, merging so refresh_token is never dropped', () => {
+    const dir = tmp();
+    writeGoogleToken(dir, { refresh_token: 'keep', access_token: 'old' });
+    const client = createOAuthClient({ clientId: 'i', clientSecret: 's', dataRoot: dir });
+    client.emit('tokens', { access_token: 'new', expiry_date: 42 });
+    expect(readGoogleToken(dir)).toEqual({ refresh_token: 'keep', access_token: 'new', expiry_date: 42 });
   });
 });
