@@ -15,6 +15,8 @@ See CLAUDE.md -> Working rules.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-16
+
 ### Added
 
 - Live GitHub connector via the official remote MCP server (PAT auth), mapping configured repos to streams (#13)
@@ -42,5 +44,6 @@ writes a human-readable plan; time can be logged back with self-correcting pace.
 - Gmail connector + Calendar committed-hours provider (#8)
 - Secret loading from `<dataRoot>/.env` + `.env.example` template (#9)
 
-[unreleased]: https://github.com/kyle-park-io/jarvis/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/kyle-park-io/jarvis/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/kyle-park-io/jarvis/releases/tag/v0.2.0
 [0.1.0]: https://github.com/kyle-park-io/jarvis/releases/tag/v0.1.0
