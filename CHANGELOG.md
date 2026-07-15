@@ -15,6 +15,10 @@ See CLAUDE.md -> Working rules.
 
 ## [Unreleased]
 
+### Added
+
+- Live GitHub connector via the official remote MCP server (PAT auth), mapping configured repos to streams (#14)
+
 ## [0.1.0] - 2026-07-15
 
 First tagged release — the read-only MVP. Jarvis reads tasks from sources,
