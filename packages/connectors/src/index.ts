@@ -9,6 +9,7 @@ export {
   githubIssuesToTasks,
   extractIssues,
   type GithubIssue,
+  type GithubRepoEntry,
   type GithubConnectorOptions,
 } from './github';
 export {
