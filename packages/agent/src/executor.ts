@@ -61,6 +61,9 @@ export interface ExecuteIssueParams {
   workRoot: string;
   auditPath: string;
   model?: string;
+  /** Commit identity for the isolated clone (which inherits no git config). */
+  authorName?: string;
+  authorEmail?: string;
 }
 
 export interface ExecuteResult {
@@ -107,7 +110,15 @@ export async function executeIssue(params: ExecuteIssueParams, run: RunFn = defa
 
   let prUrl = '';
   if (changed) {
-    await must(run, 'git', ['-C', worktree, 'commit', '-m', `jarvis: address #${number} — ${params.title}`]);
+    // The fresh clone inherits no git identity, so set one explicitly for the commit.
+    const authorName = params.authorName ?? 'Jarvis';
+    const authorEmail = params.authorEmail ?? 'jarvis@users.noreply.github.com';
+    await must(run, 'git', [
+      '-C', worktree,
+      '-c', `user.name=${authorName}`,
+      '-c', `user.email=${authorEmail}`,
+      'commit', '-m', `jarvis: address #${number} — ${params.title}`,
+    ]);
     await must(run, 'git', ['-C', worktree, 'push', '-u', 'origin', branch]);
     const pr = await must(run, 'gh', [
       'pr', 'create',

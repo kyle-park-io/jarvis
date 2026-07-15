@@ -57,7 +57,7 @@ describe('executeIssue', () => {
     expect(joined).toMatch(/gh repo clone o\/r/);
     expect(joined).toMatch(/git .*checkout -b jarvis\/issue-3/);
     expect(joined).toMatch(/^claude -p /m);
-    expect(joined).toMatch(/git .*commit/);
+    expect(joined).toMatch(/git .*-c user\.name=.* -c user\.email=.* commit/);
     expect(joined).toMatch(/git .*push/);
     expect(joined).toMatch(/gh pr create .*--draft/);
     // audit written
