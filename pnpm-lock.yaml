@@ -17,6 +17,9 @@ importers:
 
   apps/cli:
     dependencies:
+      '@jarvis/agent':
+        specifier: workspace:*
+        version: link:../../packages/agent
       '@jarvis/connectors':
         specifier: workspace:*
         version: link:../../packages/connectors

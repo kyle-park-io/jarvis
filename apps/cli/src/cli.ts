@@ -12,6 +12,7 @@ export interface CliDeps {
   out: (text: string) => void;
   committedHoursProvider?: (date: string) => Promise<number>;
   runAuth?: (provider: string) => Promise<number>;
+  runDo?: (ref: string) => Promise<number>;
 }
 
 const HELP = `jarvis — personal task planner
@@ -22,6 +23,7 @@ Usage:
   jarvis alerts            Show today's alerts
   jarvis log <stream> <hours> [--date=D]   Log hours worked on a stream
   jarvis auth google       Authorize Google (Calendar) once
+  jarvis do <owner/repo#N>  Draft a PR for an issue (allowlisted repos)
   jarvis help              Show this help
 `;
 
@@ -85,6 +87,14 @@ export async function runCli(argv: string[], deps: CliDeps): Promise<number> {
         return 1;
       }
       return deps.runAuth(provider);
+    }
+    case 'do': {
+      const ref = argv[1];
+      if (ref === undefined || deps.runDo === undefined) {
+        deps.out('Usage: jarvis do <owner/repo#number>\n');
+        return 1;
+      }
+      return deps.runDo(ref);
     }
     case undefined:
     case 'help':
