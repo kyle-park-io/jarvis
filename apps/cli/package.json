@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@jarvis/agent": "workspace:*",
     "@jarvis/connectors": "workspace:*",
     "@jarvis/core": "workspace:*",
     "@jarvis/scheduler": "workspace:*",

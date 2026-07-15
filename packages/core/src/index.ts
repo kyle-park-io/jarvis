@@ -28,3 +28,4 @@ export {
   workdaysInWeek,
   workdaysElapsed,
 } from './dates';
+export { isExecutionAllowed } from './execution';

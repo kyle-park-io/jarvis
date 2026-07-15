@@ -147,4 +147,23 @@ streams:
     expect(code).toBe(1);
     expect(output).toContain('Usage: jarvis auth google');
   });
+
+  it('routes `do <ref>` to runDo', async () => {
+    let called = '';
+    const code = await runCli(['do', 'o/r#3'], {
+      ...deps(),
+      runDo: async (ref) => {
+        called = ref;
+        return 0;
+      },
+    });
+    expect(called).toBe('o/r#3');
+    expect(code).toBe(0);
+  });
+
+  it('`do` with no ref or no runDo prints usage and returns 1', async () => {
+    const code = await runCli(['do'], deps());
+    expect(code).toBe(1);
+    expect(output).toContain('Usage: jarvis do');
+  });
 });

@@ -30,6 +30,10 @@ const GithubSchema = z.object({
   repos: z.array(GithubRepoSchema),
 }).strict();
 
+const ExecutionSchema = z.object({
+  repos: z.array(z.string()),
+}).strict();
+
 export type GithubRepoConfig = z.infer<typeof GithubRepoSchema>;
 
 export const ConfigSchema = z.object({
@@ -39,6 +43,7 @@ export const ConfigSchema = z.object({
   droppedBallDays: z.number().int().nonnegative().default(1),
   streams: z.array(StreamSchema).default([]),
   github: GithubSchema.optional(),
+  execution: ExecutionSchema.optional(),
 }).strict();
 
 export type JarvisConfig = z.infer<typeof ConfigSchema>;

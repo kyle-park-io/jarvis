@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import path from 'node:path';
-import { toISODate } from '@jarvis/core';
+import { spawnSync } from 'node:child_process';
+import { toISODate, isExecutionAllowed } from '@jarvis/core';
 import { resolveDataRoot, loadConfig, type GithubRepoConfig } from '@jarvis/store';
 import { folderConnector } from '@jarvis/connectors';
 import type { Connector } from '@jarvis/connectors';
+import { parseIssueRef, executeIssue } from '@jarvis/agent';
 import { runCli } from './cli';
 import { createGithubConnector } from './github-mcp';
 import { createCalendarProvider } from './calendar-mcp';
@@ -67,6 +69,58 @@ async function main(): Promise<number> {
         provider === 'google'
           ? runGoogleAuth({ dataRoot, env: process.env, out: (t) => process.stdout.write(t) })
           : (process.stdout.write(`Unknown auth provider: ${provider}\n`), 1),
+      runDo: async (ref) => {
+        let parsed;
+        try {
+          parsed = parseIssueRef(ref);
+        } catch (error) {
+          process.stdout.write(`${error instanceof Error ? error.message : String(error)}\n`);
+          return 1;
+        }
+        const slug = `${parsed.owner}/${parsed.repo}`;
+
+        // A missing/unreadable config must not crash `do`; fall back to an
+        // empty allowlist so an unconfigured repo is refused, fail-safe.
+        let allowed: string[] = [];
+        try {
+          allowed = loadConfig(dataRoot).execution?.repos ?? [];
+        } catch {
+          allowed = [];
+        }
+        if (!isExecutionAllowed(slug, allowed)) {
+          process.stdout.write(`Execution not allowed for ${slug}. Add it to config.yaml under execution.repos.\n`);
+          return 1;
+        }
+
+        // Fetch the issue via gh (execution subsystem is CLI-driven).
+        const view = spawnSync(
+          'gh',
+          ['issue', 'view', String(parsed.number), '--repo', slug, '--json', 'title,body'],
+          { encoding: 'utf8' },
+        );
+        if (view.status !== 0) {
+          process.stdout.write(`Could not read ${slug}#${parsed.number}: ${(view.stderr || '').trim()}\n`);
+          return 1;
+        }
+        const issue = JSON.parse(view.stdout) as { title: string; body: string | null };
+
+        process.stdout.write(`Working on ${slug}#${parsed.number} (isolated clone + local claude)...\n`);
+        const result = await executeIssue({
+          owner: parsed.owner,
+          repo: parsed.repo,
+          number: parsed.number,
+          title: issue.title,
+          body: issue.body ?? '',
+          workRoot: path.join(dataRoot, 'work'),
+          auditPath: path.join(dataRoot, 'audit.log'),
+        });
+        if (!result.changed) {
+          process.stdout.write(`Agent made no changes: ${result.resultSummary}\n`);
+          return 0;
+        }
+        process.stdout.write(`Draft PR: ${result.prUrl}\n`);
+        return 0;
+      },
     });
   } finally {
     if (github) {

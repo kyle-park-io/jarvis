@@ -15,6 +15,10 @@ See CLAUDE.md -> Working rules.
 
 ## [Unreleased]
 
+### Added
+
+- `jarvis do <owner/repo#N>` (Phase 2, experimental): drafts a PR for an allowlisted-repo issue using the local Claude CLI in an isolated clone — never touches main, opens a draft PR as the approval gate, audited to `<dataRoot>/audit.log` (#18)
+
 ## [0.2.0] - 2026-07-16
 
 ### Added

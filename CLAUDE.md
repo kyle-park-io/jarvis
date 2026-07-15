@@ -19,7 +19,7 @@ Design v0.1 done. **Code is not scaffolded yet.** Next step = write the implemen
 ## Locked stack
 
 - **TypeScript monorepo + pnpm workspaces** (this is the agent-orchestration layer, so not Go).
-- Execution engine: **Claude Agent SDK** (`@anthropic-ai/claude-agent-sdk`). Auth = ① Claude subscription login (local/personal) or ② `ANTHROPIC_API_KEY` (always-on/serverless). Same code, only the credential differs (design §8.2, §12.2).
+- Execution engine: the **local `claude` CLI** driven headlessly (`claude -p … --output-format json` in an isolated worktree — Claude Code as the agent harness). Auth = ① a Claude subscription login — what Phase 2 shipped with, **no API key** — or ② `ANTHROPIC_API_KEY` / the Claude Agent SDK for always-on/serverless (design §8.2, §12.2).
 - Scheduler **croner** (⚠️ not node-cron — DST/timezone correctness) · store **better-sqlite3** (`node:sqlite` optional on Node 26+) · validation **zod** · file-watch **chokidar** · tests **vitest** · build **tsup** (2026 alternative: tsdown).
 
 ## Structure (planned)

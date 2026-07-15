@@ -122,3 +122,18 @@ describe('github config section', () => {
     expect(cfg.github?.repos[0]).toEqual({ repo: 'octo/hello', stream: 'personal' });
   });
 });
+
+describe('execution config section', () => {
+  it('parses execution.repos', () => {
+    const cfg = ConfigSchema.parse({ execution: { repos: ['kyle-park-io/jarvis-sandbox'] } });
+    expect(cfg.execution?.repos).toEqual(['kyle-park-io/jarvis-sandbox']);
+  });
+
+  it('leaves execution undefined when absent', () => {
+    expect(ConfigSchema.parse({ streams: [] }).execution).toBeUndefined();
+  });
+
+  it('rejects unknown keys in execution (strict)', () => {
+    expect(() => ConfigSchema.parse({ execution: { repos: [], extra: 1 } })).toThrow();
+  });
+});
