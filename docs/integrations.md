@@ -19,7 +19,7 @@ credential or config means Jarvis runs without that source, never crashes.
 | **GitHub** | Official remote MCP server | `https://api.githubcopilot.com/mcp/` | `list_issues` | `GITHUB_PERSONAL_ACCESS_TOKEN` (Bearer) | ✅ **Live** |
 | **Google Calendar** | Official remote MCP server | `https://calendarmcp.googleapis.com/mcp/v1` | `list_events` | Google OAuth 2.0 (Bearer access token) | ⚠️ **Built, gated** |
 | **Gmail** | Official remote MCP server (planned) | `https://gmailmcp.googleapis.com/mcp/v1` | TBD | Google OAuth 2.0 | ⛔ **Not wired** |
-| **Local `claude` CLI** | Phase 2 executor (`jarvis do`) | `claude -p … --output-format json` in a worktree | Read/Write/Edit/Bash (built-in) | Claude subscription login (**no API key**) | 🧪 **Built (smoke pending)** |
+| **Local `claude` CLI** | Phase 2 executor (`jarvis do`) | `claude -p … --output-format json` in a worktree | Read/Write/Edit/Bash (built-in) | Claude subscription login (**no API key**) | ✅ **Live** (experimental) |
 | **Folder** | Local filesystem | `<dataRoot>/streams/*` | — | none | ✅ Live (not external) |
 
 ---
