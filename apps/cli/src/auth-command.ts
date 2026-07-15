@@ -16,6 +16,21 @@ export function buildConsentUrl(client: OAuth2Client, scopes: string[]): string 
   return client.generateAuthUrl({ access_type: 'offline', prompt: 'consent', scope: scopes });
 }
 
+export type Callback =
+  | { kind: 'code'; code: string }
+  | { kind: 'error'; error: string }
+  | { kind: 'ignore' };
+
+/** Classify an OAuth loopback callback URL: an auth code, a denial/error, or a stray request. */
+export function classifyCallback(rawUrl: string): Callback {
+  const params = new URL(rawUrl, 'http://localhost').searchParams;
+  const code = params.get('code');
+  if (code) return { kind: 'code', code };
+  const error = params.get('error');
+  if (error) return { kind: 'error', error };
+  return { kind: 'ignore' };
+}
+
 /** Run the loopback OAuth consent flow and persist the resulting tokens. */
 export async function runGoogleAuth(deps: {
   dataRoot: string;
@@ -34,14 +49,20 @@ export async function runGoogleAuth(deps: {
 
     const server = http.createServer((req, res) => {
       void (async () => {
-        const url = new URL(req.url ?? '/', 'http://localhost');
-        const code = url.searchParams.get('code');
-        if (!code || !client) {
-          res.writeHead(400).end('Missing ?code');
+        const result = classifyCallback(req.url ?? '/');
+        if (!client || result.kind === 'ignore') {
+          res.writeHead(404).end('Waiting for the OAuth callback...');
+          return;
+        }
+        if (result.kind === 'error') {
+          res.writeHead(400).end('Authorization denied.');
+          deps.out(`Authorization denied: ${result.error}\n`);
+          server.close();
+          resolve(1);
           return;
         }
         try {
-          const { tokens } = await client.getToken(code);
+          const { tokens } = await client.getToken(result.code);
           writeGoogleToken(deps.dataRoot, mergeCreds(readGoogleToken(deps.dataRoot) ?? {}, tokens as GoogleCreds));
           res.writeHead(200, { 'Content-Type': 'text/plain' }).end('Jarvis is authorized. You can close this tab.');
           deps.out('Authorized — tokens saved.\n');
@@ -58,6 +79,7 @@ export async function runGoogleAuth(deps: {
 
     server.on('error', (error) => {
       deps.out(`Auth server error: ${error.message}\n`);
+      server.close();
       resolve(1);
     });
 
