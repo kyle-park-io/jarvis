@@ -15,7 +15,8 @@
     "@jarvis/connectors": "workspace:*",
     "@jarvis/core": "workspace:*",
     "@jarvis/scheduler": "workspace:*",
-    "@jarvis/store": "workspace:*"
+    "@jarvis/store": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0"
   },
   "devDependencies": {
     "tsx": "^4.23.1",

@@ -1,13 +1,17 @@
 import type { Task } from '@jarvis/core';
 import type { Connector } from './types';
-import { mcpConnector, parseMcpJson } from './mcp';
+import { parseMcpJson } from './mcp';
 
+/** One issue from a list_issues result (remote GitHub MCP server). */
 export interface GithubIssue {
   number: number;
   title: string;
+  /** Issue state — the server returns 'OPEN' | 'CLOSED' (uppercase); compared case-insensitively. */
   state: string;
+  /** Web URL of the issue, when the server provides one (the remote server omits it). */
+  url?: string;
+  /** "owner/name" — the server does not include it per-issue; the connector injects it. */
   repository?: string;
-  html_url?: string;
 }
 
 export function githubIssuesToTasks(issues: GithubIssue[], streamId: string): Task[] {
@@ -18,10 +22,16 @@ export function githubIssuesToTasks(issues: GithubIssue[], streamId: string): Ta
       streamId,
       title: issue.title,
       source: 'github',
-      status: issue.state === 'closed' ? 'done' : 'todo',
+      status: issue.state.toUpperCase() === 'CLOSED' ? 'done' : 'todo',
       spentHours: 0,
     };
-    if (issue.html_url !== undefined) task.sourceRef = issue.html_url;
+    if (issue.url !== undefined) {
+      task.sourceRef = issue.url;
+    } else if (issue.repository !== undefined) {
+      // list_issues carries no per-issue URL, so link back with the stable
+      // canonical issue URL built from the (injected) repo + number.
+      task.sourceRef = `https://github.com/${issue.repository}/issues/${issue.number}`;
+    }
     return task;
   });
 }
@@ -30,48 +40,84 @@ function toGithubIssue(raw: unknown): GithubIssue {
   if (raw === null || typeof raw !== 'object') {
     throw new Error(`Malformed GitHub issue (not an object): ${JSON.stringify(raw)}`);
   }
-  const issue = raw as { number?: unknown; title?: unknown; state?: unknown; repository?: unknown; html_url?: unknown };
+  const issue = raw as { number?: unknown; title?: unknown; state?: unknown; url?: unknown };
   if (typeof issue.number !== 'number' || typeof issue.title !== 'string' || typeof issue.state !== 'string') {
     throw new Error(`Malformed GitHub issue (missing number/title/state): ${JSON.stringify(raw)}`);
   }
   const result: GithubIssue = { number: issue.number, title: issue.title, state: issue.state };
-  if (typeof issue.repository === 'string') result.repository = issue.repository;
-  if (typeof issue.html_url === 'string') result.html_url = issue.html_url;
+  if (typeof issue.url === 'string') result.url = issue.url;
   return result;
 }
 
+/**
+ * Extract the issue list from a list_issues result. The remote GitHub MCP
+ * server returns `{ issues: [...], totalCount, pageInfo }`. A GraphQL-shaped
+ * `{ repository: { issues: { nodes } } }`, a `{ nodes }` wrapper, or a bare
+ * array are also accepted for resilience across server variants.
+ */
 export function extractIssues(parsed: unknown): GithubIssue[] {
-  let rawArray: unknown[];
-  if (Array.isArray(parsed)) {
-    rawArray = parsed;
-  } else if (parsed !== null && typeof parsed === 'object') {
-    const wrapped = parsed as { items?: unknown; issues?: unknown };
-    if (Array.isArray(wrapped.items)) rawArray = wrapped.items;
-    else if (Array.isArray(wrapped.issues)) rawArray = wrapped.issues;
-    else throw new Error('Unexpected GitHub MCP result shape (expected an array, or { items } / { issues })');
-  } else {
-    throw new Error('Unexpected GitHub MCP result shape (expected an array, or { items } / { issues })');
+  return findIssueNodes(parsed).map(toGithubIssue);
+}
+
+function findIssueNodes(parsed: unknown): unknown[] {
+  if (Array.isArray(parsed)) return parsed;
+  if (parsed !== null && typeof parsed === 'object') {
+    const obj = parsed as { repository?: unknown; issues?: unknown; nodes?: unknown };
+    // Real remote-server shape: { issues: [...], totalCount, pageInfo }.
+    if (Array.isArray(obj.issues)) return obj.issues;
+    // GraphQL-shaped variant: { repository: { issues: { nodes: [...] } } }.
+    if (obj.repository !== null && typeof obj.repository === 'object') {
+      const repo = obj.repository as { issues?: unknown };
+      if (repo.issues !== null && typeof repo.issues === 'object') {
+        const issues = repo.issues as { nodes?: unknown };
+        if (Array.isArray(issues.nodes)) return issues.nodes;
+      }
+    }
+    if (Array.isArray(obj.nodes)) return obj.nodes;
   }
-  return rawArray.map(toGithubIssue);
+  throw new Error('Unexpected GitHub MCP result shape (expected { issues: [...] } or { repository: { issues: { nodes } } })');
+}
+
+export interface GithubRepoEntry {
+  /** "owner/name" — disambiguates task ids and (in the app layer) selects the repo to query. */
+  repo: string;
+  /** The stream all issues from this repo belong to. */
+  streamId: string;
+  /** Issue-state filter passed to the app-layer callTool (default handled there). */
+  state?: string;
 }
 
 export interface GithubConnectorOptions {
-  /** The stream all pulled GitHub tasks belong to. */
-  streamId: string;
+  entries: GithubRepoEntry[];
   /**
-   * Calls the GitHub MCP server's issue-listing tool and resolves its raw
-   * result. In the app layer this is wired to a real MCP client, e.g.
-   * (pseudo): a `@modelcontextprotocol/sdk` Client over a StdioClient
-   * transport spawning the GitHub MCP server with a GITHUB_TOKEN, calling
-   * `client.callTool({ name: 'list_issues', arguments: {...} })`.
+   * Calls the GitHub MCP server's `list_issues` for one entry and resolves the
+   * raw MCP tool-result. Wired to a real MCP client in the app layer. MUST
+   * reject on failure (auth/network) — never resolve empty on error.
    */
-  callTool: () => Promise<unknown>;
+  callTool: (entry: GithubRepoEntry) => Promise<unknown>;
 }
 
+/**
+ * One aggregating `github` Connector. Reconciliation is source-authoritative
+ * per source, so ALL github tasks must come from a single connector: this loops
+ * every configured repo→stream entry, tags each repo's issues with that repo
+ * (for stable `github:owner/name#N` ids), maps them into the entry's stream, and
+ * concatenates. Any entry's rejection rejects the whole pull (never returns []).
+ */
 export function githubConnector(options: GithubConnectorOptions): Connector {
-  return mcpConnector({
+  return {
     id: 'github',
-    callTool: options.callTool,
-    map: (raw) => githubIssuesToTasks(extractIssues(parseMcpJson(raw)), options.streamId),
-  });
+    pull: async () => {
+      const tasks: Task[] = [];
+      for (const entry of options.entries) {
+        const parsed = parseMcpJson(await options.callTool(entry));
+        const issues = extractIssues(parsed).map((issue) => ({
+          ...issue,
+          repository: issue.repository ?? entry.repo,
+        }));
+        tasks.push(...githubIssuesToTasks(issues, entry.streamId));
+      }
+      return tasks;
+    },
+  };
 }

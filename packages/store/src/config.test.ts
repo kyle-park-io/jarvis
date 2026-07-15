@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { loadConfig } from './config';
+import { ConfigSchema, loadConfig } from './config';
 
 describe('loadConfig', () => {
   let dir: string;
@@ -76,5 +76,49 @@ dailyCapcityHours: 6
 streams: []
 `);
     expect(() => loadConfig(dir)).toThrow();
+  });
+});
+
+describe('github config section', () => {
+  it('parses a github section with repos mapped to streams', () => {
+    const cfg = ConfigSchema.parse({
+      streams: [],
+      github: { repos: [{ repo: 'octo/hello', stream: 'personal' }] },
+    });
+    expect(cfg.github).toEqual({ repos: [{ repo: 'octo/hello', stream: 'personal' }] });
+  });
+
+  it('accepts an optional per-repo state filter', () => {
+    const cfg = ConfigSchema.parse({
+      github: { repos: [{ repo: 'octo/hello', stream: 'personal', state: 'all' }] },
+    });
+    expect(cfg.github?.repos[0]?.state).toBe('all');
+  });
+
+  it('rejects an unknown state', () => {
+    expect(() =>
+      ConfigSchema.parse({ github: { repos: [{ repo: 'octo/hello', stream: 'personal', state: 'nope' }] } }),
+    ).toThrow();
+  });
+
+  it('rejects unknown keys in a github repo entry (strict)', () => {
+    expect(() =>
+      ConfigSchema.parse({ github: { repos: [{ repo: 'octo/hello', stream: 'personal', extra: 1 }] } }),
+    ).toThrow();
+  });
+
+  it('leaves github undefined when the section is absent', () => {
+    const cfg = ConfigSchema.parse({ streams: [] });
+    expect(cfg.github).toBeUndefined();
+  });
+
+  it('loads a github section from config.yaml', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jarvis-cfg-'));
+    fs.writeFileSync(
+      path.join(dir, 'config.yaml'),
+      'github:\n  repos:\n    - repo: octo/hello\n      stream: personal\n',
+    );
+    const cfg = loadConfig(dir);
+    expect(cfg.github?.repos[0]).toEqual({ repo: 'octo/hello', stream: 'personal' });
   });
 });
