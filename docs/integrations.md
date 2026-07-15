@@ -19,7 +19,7 @@ credential or config means Jarvis runs without that source, never crashes.
 | **GitHub** | Official remote MCP server | `https://api.githubcopilot.com/mcp/` | `list_issues` | `GITHUB_PERSONAL_ACCESS_TOKEN` (Bearer) | ✅ **Live** |
 | **Google Calendar** | Official remote MCP server | `https://calendarmcp.googleapis.com/mcp/v1` | `list_events` | Google OAuth 2.0 (Bearer access token) | ⚠️ **Built, gated** |
 | **Gmail** | Official remote MCP server (planned) | `https://gmailmcp.googleapis.com/mcp/v1` | TBD | Google OAuth 2.0 | ⛔ **Not wired** |
-| **Claude Agent SDK** | Local library (Phase 2) | runs in-process | built-in Read/Write/Edit/Bash | `ANTHROPIC_API_KEY` | ⛔ **Not built** |
+| **Local `claude` CLI** | Phase 2 executor (`jarvis do`) | `claude -p … --output-format json` in a worktree | Read/Write/Edit/Bash (built-in) | Claude subscription login (**no API key**) | 🧪 **Built (smoke pending)** |
 | **Folder** | Local filesystem | `<dataRoot>/streams/*` | — | none | ✅ Live (not external) |
 
 ---
@@ -54,9 +54,9 @@ Backs Calendar (and future Gmail). `google-auth-library`'s `OAuth2Client` runs t
 
 Pure mapper exists (`packages/connectors/src/gmail.ts`); not wired. The official Gmail MCP server (`https://gmailmcp.googleapis.com/mcp/v1`) almost certainly has the same Workspace gate as Calendar, so a **local** Google MCP server is the likely path.
 
-## Claude Agent SDK — Phase 2 (not built)
+## Local `claude` CLI — Phase 2 executor
 
-The execution engine for Phase 2 (`jarvis do <issue>` → draft PR). `@anthropic-ai/claude-agent-sdk` runs the agent loop locally (built-in Read/Write/Edit/Bash tools), edits code in an isolated worktree, and a `PostToolUse` hook writes an audit log. **Auth = `ANTHROPIC_API_KEY`** (the Agent SDK does not permit claude.ai/subscription login for SDK-built agents). `gh` CLI is used to open the **draft PR** (the approval gate). Not yet in the code.
+The execution engine for Phase 2 (`jarvis do <owner/repo#N>` → draft PR). `packages/agent` spawns the **local `claude` CLI** headlessly — `claude -p "<task>" --permission-mode bypassPermissions --output-format json` with `cwd` set to an isolated clone — so it uses **Kyle's Claude Code subscription login, no `ANTHROPIC_API_KEY`, no billing config**. The agent (built-in Read/Write/Edit/Bash) edits the code; then `git` commits/pushes the branch and `gh` opens the **draft PR** (the approval gate). Every run is appended to `~/jarvis/audit.log`. `main` is never touched. (The hosted Claude Agent SDK + `ANTHROPIC_API_KEY` remains a possible always-on/serverless alternative — not what shipped.)
 
 ---
 
@@ -66,8 +66,8 @@ The execution engine for Phase 2 (`jarvis do <issue>` → draft PR). `@anthropic
 |---|---|---|
 | `@modelcontextprotocol/sdk` | MCP client transport (GitHub, Calendar) | `apps/cli` |
 | `google-auth-library` | Google OAuth token lifecycle | `apps/cli` |
-| `@anthropic-ai/claude-agent-sdk` | Phase 2 execution engine (planned) | `apps/cli` / `packages/agent` |
-| `gh` CLI | draft-PR creation (Phase 2); dev/testing | external tool |
+| local `claude` CLI (spawned, not a dep) | Phase 2 executor — `claude -p … --output-format json` | `packages/agent` |
+| `gh` CLI (spawned) | Phase 2: clone + `gh issue view` + draft-PR creation; dev/testing | `packages/agent`, `apps/cli` |
 
 ## Secrets & where they live
 
@@ -77,6 +77,6 @@ All secrets live in **`<dataRoot>/.env`** (default `~/jarvis/.env`), outside the
 |---|---|---|
 | `GITHUB_PERSONAL_ACCESS_TOKEN` | GitHub MCP | used now |
 | `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET` | Google Calendar/Gmail MCP | used when Google is set up |
-| `ANTHROPIC_API_KEY` | Claude Agent SDK (Phase 2) | not used yet |
+| `ANTHROPIC_API_KEY` | — Phase 2 uses the local `claude` CLI (subscription), not the API | **not used** (kept for a possible always-on/serverless future) |
 
 Derived/stored credentials: `~/jarvis/google-token.json` (Google refresh token, written by `jarvis auth google`). Both `.env` and `google-token.json` sit in the data directory and are never committed.
