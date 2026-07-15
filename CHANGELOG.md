@@ -19,6 +19,10 @@ See CLAUDE.md -> Working rules.
 
 - Live GitHub connector via the official remote MCP server (PAT auth), mapping configured repos to streams (#13)
 
+### Changed
+
+- GitHub connector paginates `list_issues`, pulling all open issues per repo instead of only the first 100 (#14)
+
 ## [0.1.0] - 2026-07-15
 
 First tagged release — the read-only MVP. Jarvis reads tasks from sources,
