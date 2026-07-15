@@ -3,6 +3,17 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { calendarCommittedHours } from '@jarvis/connectors';
 import { createOAuthClient, googleClientConfigFromEnv, hasGoogleAuth } from './google-auth';
 
+// LIMITATION (verified 2026-07-16): the official remote Calendar MCP server
+// below is gated to Google Workspace accounts / the Workspace Developer Preview
+// Program. A personal @gmail account gets "The caller does not have permission"
+// on every tool call even with both APIs enabled and the three required scopes
+// granted — that is Google's account restriction, not a client bug (the token,
+// scopes, connection, and tool-call format are all verified correct). Jarvis
+// stays fail-safe: no usable token → 0 committed hours; a runtime permission
+// error is caught in bin.ts → 0 hours + a stderr warning, so `jarvis plan`
+// never breaks. To support personal accounts, point this at a LOCAL Google MCP
+// server that wraps the plain Calendar API (which does work for personal
+// accounts). See docs/guides/google-calendar-setup.md.
 export const CALENDAR_MCP_URL = 'https://calendarmcp.googleapis.com/mcp/v1';
 
 /**

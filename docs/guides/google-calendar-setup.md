@@ -12,6 +12,16 @@ It takes ~10 minutes and only has to be done once per machine.
 > **Read-only.** Jarvis requests only read-only Calendar scopes — it reads your
 > calendars/events to compute busy hours, and nothing else.
 
+> **⚠️ Account requirement.** The official remote Calendar MCP server
+> (`calendarmcp.googleapis.com`) is currently gated to **Google Workspace
+> accounts / the Workspace Developer Preview Program**. A personal `@gmail.com`
+> account gets `The caller does not have permission` on every call even after
+> completing every step below — this is Google's restriction, not a
+> misconfiguration. On a personal account this integration won't work yet;
+> Jarvis stays fail-safe (assumes 0 committed hours). The planned fix is to swap
+> the remote server for a **local** Google MCP server that wraps the standard
+> Calendar API (which does work for personal accounts).
+
 ---
 
 ## 1. Create (or pick) a Google Cloud project
