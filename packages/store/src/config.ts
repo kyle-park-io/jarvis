@@ -20,12 +20,25 @@ type _AssertStreamMatchesWorkStream =
 const _streamTypeCheck: _AssertStreamMatchesWorkStream = true;
 void _streamTypeCheck;
 
+const GithubRepoSchema = z.object({
+  repo: z.string(),
+  stream: z.string(),
+  state: z.enum(['open', 'closed', 'all']).optional(),
+}).strict();
+
+const GithubSchema = z.object({
+  repos: z.array(GithubRepoSchema),
+}).strict();
+
+export type GithubRepoConfig = z.infer<typeof GithubRepoSchema>;
+
 export const ConfigSchema = z.object({
   dailyCapacityHours: z.number().positive().default(8),
   deadlineHorizonDays: z.number().int().positive().default(5),
   fallingBehindPct: z.number().min(0).max(100).default(25),
   droppedBallDays: z.number().int().nonnegative().default(1),
   streams: z.array(StreamSchema).default([]),
+  github: GithubSchema.optional(),
 }).strict();
 
 export type JarvisConfig = z.infer<typeof ConfigSchema>;
