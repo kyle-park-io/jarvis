@@ -10,6 +10,8 @@ export interface CliDeps {
   connectors: Connector[];
   today: string;
   out: (text: string) => void;
+  committedHoursProvider?: (date: string) => Promise<number>;
+  runAuth?: (provider: string) => Promise<number>;
 }
 
 const HELP = `jarvis — personal task planner
@@ -19,6 +21,7 @@ Usage:
   jarvis plan [--date=D]   Show the plan for a date (default: today)
   jarvis alerts            Show today's alerts
   jarvis log <stream> <hours> [--date=D]   Log hours worked on a stream
+  jarvis auth google       Authorize Google (Calendar) once
   jarvis help              Show this help
 `;
 
@@ -36,7 +39,15 @@ export async function runCli(argv: string[], deps: CliDeps): Promise<number> {
       return showPlan(deps, values.date ?? deps.today);
     }
     case 'alerts': {
-      const result = await runDailyPlan({ dataRoot: deps.dataRoot, connectors: deps.connectors, date: deps.today });
+      const committedHoursToday = deps.committedHoursProvider
+        ? await deps.committedHoursProvider(deps.today)
+        : undefined;
+      const result = await runDailyPlan({
+        dataRoot: deps.dataRoot,
+        connectors: deps.connectors,
+        date: deps.today,
+        committedHoursToday,
+      });
       deps.out(formatAlerts(result.alerts));
       return 0;
     }
@@ -67,6 +78,14 @@ export async function runCli(argv: string[], deps: CliDeps): Promise<number> {
       deps.out(`Logged ${hours}h to ${streamId} on ${date}.\n`);
       return 0;
     }
+    case 'auth': {
+      const provider = argv[1];
+      if (provider === undefined || deps.runAuth === undefined) {
+        deps.out('Usage: jarvis auth google\n');
+        return 1;
+      }
+      return deps.runAuth(provider);
+    }
     case undefined:
     case 'help':
       deps.out(HELP);
@@ -78,7 +97,13 @@ export async function runCli(argv: string[], deps: CliDeps): Promise<number> {
 }
 
 async function showPlan(deps: CliDeps, date: string): Promise<number> {
-  const result = await runDailyPlan({ dataRoot: deps.dataRoot, connectors: deps.connectors, date });
+  const committedHoursToday = deps.committedHoursProvider ? await deps.committedHoursProvider(date) : undefined;
+  const result = await runDailyPlan({
+    dataRoot: deps.dataRoot,
+    connectors: deps.connectors,
+    date,
+    committedHoursToday,
+  });
   deps.out(fs.readFileSync(result.planPath, 'utf8'));
   return 0;
 }

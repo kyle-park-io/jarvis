@@ -115,4 +115,36 @@ streams:
     await runCli(['today'], { ...deps(), out: (t) => (after += t) });
     expect(after).toContain('## Work — 3h');
   });
+
+  it('threads committedHoursToday from the provider into the plan', async () => {
+    let seenDate = '';
+    const code = await runCli(['plan', '--date=2026-07-15'], {
+      ...deps(),
+      committedHoursProvider: async (date) => {
+        seenDate = date;
+        return 2;
+      },
+    });
+    expect(code).toBe(0);
+    expect(seenDate).toBe('2026-07-15');
+  });
+
+  it('routes `auth google` to runAuth', async () => {
+    let called = '';
+    const code = await runCli(['auth', 'google'], {
+      ...deps(),
+      runAuth: async (p) => {
+        called = p;
+        return 0;
+      },
+    });
+    expect(called).toBe('google');
+    expect(code).toBe(0);
+  });
+
+  it('auth without a provider or without runAuth prints usage and returns 1', async () => {
+    const code = await runCli(['auth'], deps());
+    expect(code).toBe(1);
+    expect(output).toContain('Usage: jarvis auth google');
+  });
 });
