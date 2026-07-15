@@ -10,7 +10,13 @@ import {
   type GoogleCreds,
 } from './google-auth';
 
-export const CALENDAR_SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
+// Scopes the remote Calendar MCP server requires (per Google's setup docs) —
+// not the plain calendar.readonly scope.
+export const CALENDAR_SCOPES = [
+  'https://www.googleapis.com/auth/calendar.calendarlist.readonly',
+  'https://www.googleapis.com/auth/calendar.events.freebusy',
+  'https://www.googleapis.com/auth/calendar.events.readonly',
+];
 
 export function buildConsentUrl(client: OAuth2Client, scopes: string[]): string {
   return client.generateAuthUrl({ access_type: 'offline', prompt: 'consent', scope: scopes });

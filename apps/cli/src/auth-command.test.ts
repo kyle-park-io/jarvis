@@ -8,7 +8,8 @@ describe('buildConsentUrl', () => {
     const url = new URL(buildConsentUrl(client, CALENDAR_SCOPES));
     expect(url.searchParams.get('access_type')).toBe('offline');
     expect(url.searchParams.get('prompt')).toBe('consent');
-    expect(url.searchParams.get('scope')).toContain('calendar.readonly');
+    expect(url.searchParams.get('scope')).toContain('calendar.events.readonly');
+    expect(url.searchParams.get('scope')).toContain('calendar.events.freebusy');
     expect(url.searchParams.get('redirect_uri')).toBe('http://localhost:9/x');
   });
 });

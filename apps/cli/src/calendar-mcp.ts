@@ -5,9 +5,18 @@ import { createOAuthClient, googleClientConfigFromEnv, hasGoogleAuth } from './g
 
 export const CALENDAR_MCP_URL = 'https://calendarmcp.googleapis.com/mcp/v1';
 
-/** UTC day bounds for a `YYYY-MM-DD` date, used as the list_events window. */
-export function dayWindow(date: string): { timeMin: string; timeMax: string } {
-  return { timeMin: `${date}T00:00:00Z`, timeMax: `${date}T23:59:59Z` };
+/**
+ * `list_events` time bounds (its arg names are `startTime`/`endTime`) covering
+ * `date` with a ±1-day margin, so events aren't missed when the user's timezone
+ * offsets the day out of a strict UTC window; the mapper then filters to the
+ * exact local date.
+ */
+export function dayWindow(date: string): { startTime: string; endTime: string } {
+  const base = Date.parse(`${date}T00:00:00Z`);
+  return {
+    startTime: new Date(base - 86_400_000).toISOString(),
+    endTime: new Date(base + 86_400_000).toISOString(),
+  };
 }
 
 /**
@@ -59,7 +68,7 @@ export function createCalendarProvider(params: {
       const c = await ensureClient();
       return c.callTool({
         name: 'list_events',
-        arguments: { calendarId: 'primary', singleEvents: true, ...dayWindow(date) },
+        arguments: { calendarId: 'primary', ...dayWindow(date) },
       });
     },
   });

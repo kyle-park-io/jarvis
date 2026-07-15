@@ -9,8 +9,8 @@ that Jarvis refreshes the token headlessly.
 This guide walks through creating the OAuth credentials and authorizing Jarvis.
 It takes ~10 minutes and only has to be done once per machine.
 
-> **Read-only.** Jarvis requests only the `calendar.readonly` scope — it can
-> read your events to compute busy hours, and nothing else.
+> **Read-only.** Jarvis requests only read-only Calendar scopes — it reads your
+> calendars/events to compute busy hours, and nothing else.
 
 ---
 
@@ -20,10 +20,15 @@ It takes ~10 minutes and only has to be done once per machine.
 2. In the project picker (top bar), **New Project** (or select an existing one).
    Any project works; name it e.g. `jarvis`.
 
-## 2. Enable the Google Calendar API
+## 2. Enable the Calendar APIs (two of them)
 
-1. Go to **APIs & Services → Library** (or search "Calendar API").
-2. Open **Google Calendar API** and click **Enable**.
+In **APIs & Services → Library**, enable **both**:
+
+1. **Google Calendar API**
+2. **Google Calendar MCP API** (`calendarmcp.googleapis.com`) — the remote MCP
+   server Jarvis actually talks to. It's a separate service from the Calendar
+   API and is **required**; without it, tool calls fail with
+   `The caller does not have permission`.
 
 ## 3. Configure the OAuth consent screen
 
@@ -33,8 +38,8 @@ screen**, sometimes labeled **Google Auth Platform**.)*
 1. **User type: External** → Create.
 2. Fill the required fields (App name e.g. `Jarvis`, your email for support +
    developer contact). You can skip everything optional.
-3. **Scopes:** you don't need to add any here — Jarvis requests
-   `calendar.readonly` at sign-in time.
+3. **Scopes:** you don't need to add any here — Jarvis requests the three
+   read-only Calendar MCP scopes (calendar list, free/busy, events) at sign-in.
 4. **Test users:** add **your own Google address**. (While the app is in
    "Testing", only listed test users can authorize it — that's fine, you're the
    only user.)

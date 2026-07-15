@@ -5,8 +5,11 @@ import path from 'node:path';
 import { dayWindow, createCalendarProvider } from './calendar-mcp';
 
 describe('dayWindow', () => {
-  it('spans the UTC day for a date', () => {
-    expect(dayWindow('2026-07-15')).toEqual({ timeMin: '2026-07-15T00:00:00Z', timeMax: '2026-07-15T23:59:59Z' });
+  it('spans the date with a ±1-day margin as startTime/endTime', () => {
+    expect(dayWindow('2026-07-15')).toEqual({
+      startTime: '2026-07-14T00:00:00.000Z',
+      endTime: '2026-07-16T00:00:00.000Z',
+    });
   });
 });
 
