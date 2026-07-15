@@ -2,13 +2,13 @@ import type { Task } from '@jarvis/core';
 import type { Connector } from './types';
 import { parseMcpJson } from './mcp';
 
-/** One issue as returned in a list_issues GraphQL `nodes` array. */
+/** One issue from a list_issues result (remote GitHub MCP server). */
 export interface GithubIssue {
   number: number;
   title: string;
-  /** GraphQL IssueState — 'OPEN' | 'CLOSED' (uppercase); compared case-insensitively. */
+  /** Issue state — the server returns 'OPEN' | 'CLOSED' (uppercase); compared case-insensitively. */
   state: string;
-  /** Web URL of the issue (GraphQL `url`). */
+  /** Web URL of the issue, when the server provides one (the remote server omits it). */
   url?: string;
   /** "owner/name" — the server does not include it per-issue; the connector injects it. */
   repository?: string;
@@ -25,7 +25,13 @@ export function githubIssuesToTasks(issues: GithubIssue[], streamId: string): Ta
       status: issue.state.toUpperCase() === 'CLOSED' ? 'done' : 'todo',
       spentHours: 0,
     };
-    if (issue.url !== undefined) task.sourceRef = issue.url;
+    if (issue.url !== undefined) {
+      task.sourceRef = issue.url;
+    } else if (issue.repository !== undefined) {
+      // list_issues carries no per-issue URL, so link back with the stable
+      // canonical issue URL built from the (injected) repo + number.
+      task.sourceRef = `https://github.com/${issue.repository}/issues/${issue.number}`;
+    }
     return task;
   });
 }
@@ -44,9 +50,10 @@ function toGithubIssue(raw: unknown): GithubIssue {
 }
 
 /**
- * Extract the issue nodes from a list_issues result. The GitHub MCP server
- * returns `{ repository: { issues: { nodes: [...] } } }` (GraphQL-shaped). A
- * bare array or `{ nodes }` / `{ issues: [...] }` is accepted as a fallback.
+ * Extract the issue list from a list_issues result. The remote GitHub MCP
+ * server returns `{ issues: [...], totalCount, pageInfo }`. A GraphQL-shaped
+ * `{ repository: { issues: { nodes } } }`, a `{ nodes }` wrapper, or a bare
+ * array are also accepted for resilience across server variants.
  */
 export function extractIssues(parsed: unknown): GithubIssue[] {
   return findIssueNodes(parsed).map(toGithubIssue);
@@ -56,6 +63,9 @@ function findIssueNodes(parsed: unknown): unknown[] {
   if (Array.isArray(parsed)) return parsed;
   if (parsed !== null && typeof parsed === 'object') {
     const obj = parsed as { repository?: unknown; issues?: unknown; nodes?: unknown };
+    // Real remote-server shape: { issues: [...], totalCount, pageInfo }.
+    if (Array.isArray(obj.issues)) return obj.issues;
+    // GraphQL-shaped variant: { repository: { issues: { nodes: [...] } } }.
     if (obj.repository !== null && typeof obj.repository === 'object') {
       const repo = obj.repository as { issues?: unknown };
       if (repo.issues !== null && typeof repo.issues === 'object') {
@@ -64,9 +74,8 @@ function findIssueNodes(parsed: unknown): unknown[] {
       }
     }
     if (Array.isArray(obj.nodes)) return obj.nodes;
-    if (Array.isArray(obj.issues)) return obj.issues;
   }
-  throw new Error('Unexpected GitHub MCP result shape (expected { repository: { issues: { nodes } } } or an array)');
+  throw new Error('Unexpected GitHub MCP result shape (expected { issues: [...] } or { repository: { issues: { nodes } } })');
 }
 
 export interface GithubRepoEntry {
