@@ -18,6 +18,7 @@ See CLAUDE.md -> Working rules.
 ### Added
 
 - Live GitHub connector via the official remote MCP server (PAT auth), mapping configured repos to streams (#13)
+- Google Calendar committed-hours: `jarvis auth google` (one-time OAuth) then real meeting hours reduce the day's capacity, via the remote Calendar MCP server. Note: that server is gated to Google Workspace / Developer-Preview accounts — personal Gmail is blocked by Google, and Jarvis stays fail-safe (0 hours) then. See `docs/guides/google-calendar-setup.md` (#15)
 
 ### Changed
 

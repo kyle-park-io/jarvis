@@ -6,6 +6,8 @@ import { folderConnector } from '@jarvis/connectors';
 import type { Connector } from '@jarvis/connectors';
 import { runCli } from './cli';
 import { createGithubConnector } from './github-mcp';
+import { createCalendarProvider } from './calendar-mcp';
+import { runGoogleAuth } from './auth-command';
 
 const dataRoot = resolveDataRoot();
 
@@ -38,17 +40,45 @@ async function main(): Promise<number> {
   });
   if (github) connectors.push(github.connector);
 
+  const calendar = createCalendarProvider({ dataRoot, env: process.env });
+
+  // A calendar hiccup must never break the daily plan: fall back to 0 + warn.
+  const committedHoursProvider = calendar
+    ? async (date: string): Promise<number> => {
+        try {
+          return await calendar.committedHours(date);
+        } catch (error) {
+          process.stderr.write(
+            `Calendar unavailable, assuming 0 committed hours: ${error instanceof Error ? error.message : String(error)}\n`,
+          );
+          return 0;
+        }
+      }
+    : undefined;
+
   try {
     return await runCli(process.argv.slice(2), {
       dataRoot,
       connectors,
       today: toISODate(new Date()),
       out: (text) => process.stdout.write(text),
+      committedHoursProvider,
+      runAuth: async (provider) =>
+        provider === 'google'
+          ? runGoogleAuth({ dataRoot, env: process.env, out: (t) => process.stdout.write(t) })
+          : (process.stdout.write(`Unknown auth provider: ${provider}\n`), 1),
     });
   } finally {
     if (github) {
       try {
         await github.close();
+      } catch {
+        // Closing the MCP client must never mask the command's own result.
+      }
+    }
+    if (calendar) {
+      try {
+        await calendar.close();
       } catch {
         // Closing the MCP client must never mask the command's own result.
       }
