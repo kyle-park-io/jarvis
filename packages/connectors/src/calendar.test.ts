@@ -61,6 +61,29 @@ describe('calendarCommittedHours', () => {
     expect(await fetchHours('2026-07-14')).toBe(2);
   });
 
+  it("passes the queried date to callTool and sums that day's timed events", async () => {
+    const seen: string[] = [];
+    const fetch = calendarCommittedHours({
+      callTool: async (date) => {
+        seen.push(date);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                events: [
+                  { start: { dateTime: `${date}T09:00:00Z` }, end: { dateTime: `${date}T10:30:00Z` } },
+                ],
+              }),
+            },
+          ],
+        };
+      },
+    });
+    await expect(fetch('2026-07-15')).resolves.toBe(1.5);
+    expect(seen).toEqual(['2026-07-15']);
+  });
+
   it('rejects (never yields 0) when the MCP call fails', async () => {
     const fetchHours = calendarCommittedHours({
       callTool: async () => {

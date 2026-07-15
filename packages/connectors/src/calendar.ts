@@ -46,12 +46,12 @@ export function extractEvents(parsed: unknown): CalendarEvent[] {
 
 export interface CalendarCommittedHoursOptions {
   /**
-   * Calls the Calendar MCP server's event-listing tool (e.g. `list_events`
-   * for the day) and resolves its raw result. Wired to a real MCP client in
-   * the app layer. MUST reject on failure — a bad fetch must never silently
-   * yield 0 committed hours (which would overstate available capacity).
+   * Calls the Calendar MCP server's event-listing tool for `date` (e.g.
+   * list_events over that day) and resolves its raw result. Wired to a real
+   * MCP client in the app layer. MUST reject on failure — a bad fetch must
+   * never silently yield 0 committed hours (which would overstate capacity).
    */
-  callTool: () => Promise<unknown>;
+  callTool: (date: string) => Promise<unknown>;
 }
 
 /**
@@ -63,5 +63,5 @@ export function calendarCommittedHours(
   options: CalendarCommittedHoursOptions,
 ): (date: string) => Promise<number> {
   return async (date: string) =>
-    eventsToCommittedHours(extractEvents(parseMcpJson(await options.callTool())), date);
+    eventsToCommittedHours(extractEvents(parseMcpJson(await options.callTool(date))), date);
 }
