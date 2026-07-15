@@ -15,6 +15,12 @@ See CLAUDE.md -> Working rules.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-07-15
+
+First tagged release — the read-only MVP. Jarvis reads tasks from sources,
+computes each stream's daily time allocation against its weekly budget, and
+writes a human-readable plan; time can be logged back with self-correcting pace.
+
 ### Added
 
 - Pure allocation engine (`core`) — the I/O-free budgeting core (#1)
@@ -26,3 +32,6 @@ See CLAUDE.md -> Working rules.
 - MCP connector framework + GitHub issue mapper (#7)
 - Gmail connector + Calendar committed-hours provider (#8)
 - Secret loading from `<dataRoot>/.env` + `.env.example` template (#9)
+
+[unreleased]: https://github.com/kyle-park-io/jarvis/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/kyle-park-io/jarvis/releases/tag/v0.1.0
