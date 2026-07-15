@@ -17,7 +17,7 @@ See CLAUDE.md -> Working rules.
 
 ### Added
 
-- Live GitHub connector via the official remote MCP server (PAT auth), mapping configured repos to streams (#14)
+- Live GitHub connector via the official remote MCP server (PAT auth), mapping configured repos to streams (#13)
 
 ## [0.1.0] - 2026-07-15
 
