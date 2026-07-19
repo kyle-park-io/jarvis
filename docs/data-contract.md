@@ -41,7 +41,7 @@ What matters about a path isn't its format, it's what you lose by deleting it.
 | `pnpm jarvis alerts` | `config.yaml`, `streams/*.md`, `jarvis.db` | `jarvis.db`, `plans/<date>.md` | same as `today` |
 | `pnpm jarvis log <stream> <hours>` | `jarvis.db` | `jarvis.db` | none |
 | `pnpm jarvis auth google` | `.env` (client id/secret), `google-token.json` (existing creds, if any) | `google-token.json` | Google OAuth consent + token exchange, via a local loopback server |
-| `pnpm jarvis do <owner/repo#N>` | `config.yaml` (`execution.repos` allowlist), `.env`, the issue itself via `gh issue view` | `audit.log`, `work/<owner>-<repo>-<N>-<ts>/` | `gh` (clone, push, draft-PR creation) and the local `claude` CLI, confined to the isolated clone |
+| `pnpm jarvis do <owner/repo#N>` | `config.yaml` (`execution.repos` allowlist), the issue itself via `gh issue view` | `audit.log`, `work/<owner>-<repo>-<N>-<ts>/` | `gh` (clone, push, draft-PR creation) and the local `claude` CLI, confined to the isolated clone |
 
 `today`, `plan`, and `alerts` all reconcile the database and (re)write that
 date's plan file — `alerts` writing a file despite its read-only-sounding name
@@ -53,7 +53,8 @@ One nuance the table simplifies: `log`'s own command logic never reads
 (`apps/cli/src/bin.ts`) to wire up the GitHub connector before dispatching to
 *any* command, `log` included, but that read is defensive — a missing or
 unreadable `config.yaml` is swallowed there, not surfaced as an error, so
-`log` works with or without one.
+`log` works with or without one. Similarly, although `.env` is loaded at
+process startup, the `do` command never reads any `.env`-sourced value.
 
 ## Surprises
 
