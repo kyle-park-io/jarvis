@@ -24,7 +24,7 @@ binary on `PATH`).
 | `pnpm jarvis alerts` | Show today's alerts | ✅ Live |
 | `pnpm jarvis log <stream> <hours> [--date=D]` | Log hours worked on a stream | ✅ Live |
 | `pnpm jarvis auth google` | Authorize Google (Calendar) once | ✅ Live |
-| `pnpm jarvis do <owner/repo#N>` | Draft a PR for an issue (allowlisted repos) | ✅ Live (experimental) |
+| `pnpm jarvis do <owner/repo#N>` | Draft a PR for an issue (allowlisted repos) | ✅ Live |
 | `pnpm jarvis help` | Show this help | ✅ Live |
 
 **`today`, `plan`, and `alerts` all write** — despite `alerts` sounding
@@ -44,5 +44,5 @@ each command reads and writes.
 | GitHub issues connector | ✅ Live | Needs a GitHub personal access token. See [integrations.md](integrations.md). |
 | Google Calendar committed hours | ⚠️ Gated | The official Calendar MCP server is restricted to Google Workspace / Developer-Preview accounts, so a personal `@gmail.com` account cannot use it. See [integrations.md](integrations.md) for the full story. |
 | Gmail | ⛔ Not wired | No connector is wired in. |
-| `jarvis do` → draft PR | ✅ Live (experimental) | Allowlist-gated: the target repo must be listed under `execution.repos` in `config.yaml`, and a missing or unreadable config falls back to an empty allowlist — refusing by default rather than executing. |
+| `jarvis do` → draft PR | ✅ Live | Allowlist-gated: the target repo must be listed under `execution.repos` in `config.yaml`, and a missing or unreadable config falls back to an empty allowlist — refusing by default rather than executing. Experimental. |
 | Scheduler daemon (unattended runs) | ⛔ Not wired | The `@jarvis/scheduler` package exists, but no CLI command starts it — every run today is triggered manually. |
