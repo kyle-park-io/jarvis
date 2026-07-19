@@ -1,24 +1,31 @@
 # Jarvis
 
-A personal chief-of-staff task agent. It manages several concurrent work streams by their **weekly time budgets** — computing how much of what to do today, surfacing things about to slip through the cracks, and (later) executing small tasks on your behalf behind an approval gate.
+A personal chief-of-staff task agent. It manages several concurrent work streams by their **weekly time budgets** — computing how much of what to do today, surfacing things about to slip through the cracks, and executing some tasks on your behalf behind an approval gate.
 
-> **Status:** design phase. Code is not scaffolded yet. See [`CLAUDE.md`](./CLAUDE.md) for the working plan.
+> **Status:** v0.2.0 released. Phase 2 (semi-autonomous execution) has shipped and is experimental. See [`CLAUDE.md`](./CLAUDE.md) for the current working plan and engineering rules.
 
 ## Why
 
 Juggling several commitments at once, it's easy to (a) drop things, (b) spend effort on the wrong thing, and (c) burn energy just deciding what to do next. That's a scheduling problem, not a discipline problem — so Jarvis computes each day's allocation from every stream's weekly budget, deadlines, and your calendar. Works for developers and non-developers alike.
 
-## Stack
+## Documentation
 
-- **TypeScript** monorepo (**pnpm** workspaces)
-- Agent execution: **Claude Agent SDK**
-- Scheduler **croner** · store **better-sqlite3** · validation **zod** · tests **vitest** · build **tsup**
+Each document below owns a set of facts and is the only place those facts are stated — start here, not in this file:
 
-## Structure (planned)
+| Document | Answers |
+|---|---|
+| [Capabilities](docs/capabilities.md) | What can Jarvis do right now, command by command and feature by feature, with an honest status for each? |
+| [Getting started](docs/getting-started.md) | How do you go from a fresh clone to your first daily plan? |
+| [Data contract](docs/data-contract.md) | What files and database rows does Jarvis create, and what happens if you delete them? |
+| [Integrations](docs/integrations.md) | What external services, MCP servers, and credentials does it use? |
+| [Guides](docs/guides/) | Step-by-step instructions for specific setup tasks (e.g. Google Calendar OAuth). |
+| [Plans](docs/plans/) | The implementation plan behind each shipped or in-progress piece of the system. |
+
+## Structure
 
 ```
 packages/{core, store, connectors, agent, scheduler}
-apps/{cli, web, bot, mcp}
+apps/cli
 ```
 
 `core` is a pure allocation engine (no I/O); everything else — connectors, scheduler, frontends — plugs in behind interfaces.
