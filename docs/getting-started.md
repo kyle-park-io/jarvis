@@ -20,7 +20,7 @@ Everything else is optional, and only unlocks a specific feature:
 |---|---|
 | A GitHub personal access token with issue read | The GitHub issues connector |
 | `gh` CLI, logged in | `pnpm jarvis do` |
-| `claude` CLI, logged in (Claude subscription — **no `ANTHROPIC_API_KEY`** needed) | `pnpm jarvis do` |
+| `claude` CLI, logged in (Claude subscription) | `pnpm jarvis do` |
 | A Google **Workspace** account | Calendar committed-hours |
 
 **Personal `@gmail.com` accounts cannot use Calendar.** The official Calendar
