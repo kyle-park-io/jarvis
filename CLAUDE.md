@@ -14,12 +14,12 @@ A personal chief-of-staff task agent. It manages several concurrent work streams
 
 ## Current status
 
-Design v0.1 done. **Code is not scaffolded yet.** Next step = write the implementation plan → **Phase 1 (MVP)**.
+**v0.2.0 released.** Phase 2 (semi-auto execution) has shipped and is experimental.
 
 ## Locked stack
 
 - **TypeScript monorepo + pnpm workspaces** (this is the agent-orchestration layer, so not Go).
-- Execution engine: the **local `claude` CLI** driven headlessly (`claude -p … --output-format json` in an isolated worktree — Claude Code as the agent harness). Auth = ① a Claude subscription login — what Phase 2 shipped with, **no API key** — or ② `ANTHROPIC_API_KEY` / the Claude Agent SDK for always-on/serverless (design §8.2, §12.2).
+- Execution engine: the **local `claude` CLI** driven headlessly (`claude -p … --output-format json` in an isolated worktree — Claude Code as the agent harness). Auth: see [`docs/integrations.md`](./docs/integrations.md).
 - Scheduler **croner** (⚠️ not node-cron — DST/timezone correctness) · store **better-sqlite3** (`node:sqlite` optional on Node 26+) · validation **zod** · file-watch **chokidar** · tests **vitest** · build **tsup** (2026 alternative: tsdown).
 
 ## Structure (planned)
@@ -30,7 +30,7 @@ apps/{cli, web, bot, mcp}
 ```
 
 - **`core`** = the pure allocation engine. **No I/O, no external deps.** Dependency arrows always point toward `core`. **Target 100% test coverage.**
-- Runtime data source: **`~/jarvis`** — SQLite `tasks.db` + human-readable `plans/YYYY-MM-DD.md`. **Separate from this code repo.**
+- Runtime data source: **`~/jarvis`** — SQLite `jarvis.db` + human-readable `plans/YYYY-MM-DD.md`. **Separate from this code repo.**
 
 ## Automation phases
 
@@ -38,7 +38,7 @@ Phase 1 intelligent planner (MVP, read-only) → Phase 2 semi-auto (drafts + iso
 
 ## Versioning & release
 
-Pre-1.0, unreleased. All packages are `private` at `0.0.0`; nothing is published or tagged yet. SemVer is declared (see `CHANGELOG.md`) but not yet practiced.
+Pre-1.0 and unpublished to npm. Packages are `private` at `0.2.0`, tagged through `v0.2.0`. SemVer is declared (see `CHANGELOG.md`) but not yet practiced.
 
 - **Scheme: git tags, no tooling.** To release: cut `CHANGELOG.md`'s `[Unreleased]` into `## [x.y.z] - YYYY-MM-DD`, bump the workspace `package.json` versions, then `git tag vX.Y.Z` + a GitHub Release. Version-automation (changesets etc.) waits until we publish to npm — YAGNI until then.
 - **Milestones:** `v0.1.0` = first tagged MVP release → … → `v1.0.0` = first stable.
@@ -75,3 +75,4 @@ Docs are pinned to triggers, so keeping them current is mechanical, not remember
 | prerequisites or secrets change | `docs/getting-started.md` + `.env.example` + `docs/integrations.md` |
 | an integration's status changes | `docs/integrations.md` (+ `docs/capabilities.md` if it's user-visible) |
 | anything user-facing | the changelog rule above |
+| a release ships | this file's **Current status** and **Versioning & release** sections |

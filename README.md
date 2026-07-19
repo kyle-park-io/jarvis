@@ -20,6 +20,7 @@ Each document below owns a set of facts and is the only place those facts are st
 | [Integrations](docs/integrations.md) | What external services, MCP servers, and credentials does it use? |
 | [Guides](docs/guides/) | Step-by-step instructions for specific setup tasks (e.g. Google Calendar OAuth). |
 | [Plans](docs/plans/) | The implementation plan behind each shipped or in-progress piece of the system. |
+| [`CLAUDE.md`](CLAUDE.md) | The engineering summary and working rules — locked stack, structure, principles, versioning, and the documentation triggers that keep these docs current. |
 
 ## Structure
 

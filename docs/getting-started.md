@@ -23,11 +23,10 @@ Everything else is optional, and only unlocks a specific feature:
 | `claude` CLI, logged in (Claude subscription) | `pnpm jarvis do` |
 | A Google **Workspace** account | Calendar committed-hours |
 
-**Personal `@gmail.com` accounts cannot use Calendar.** The official Calendar
-MCP server is gated to Workspace / Developer-Preview accounts and returns
-`The caller does not have permission` for personal Gmail — this is Google's
-restriction, not a misconfiguration. Don't spend time on it unless you have a
-Workspace account. See [integrations.md](integrations.md) for the full story.
+**Personal `@gmail.com` accounts cannot use Calendar** — this is a restriction
+Google imposes on the official Calendar MCP server, not a misconfiguration, so
+don't spend time on it unless you have a Workspace account. See
+[integrations.md](integrations.md) for the full story.
 
 ## Setup
 

@@ -28,12 +28,10 @@ binary on `PATH`).
 | `pnpm jarvis help` | Show this help | ✅ Live |
 
 **`today`, `plan`, and `alerts` all write** — despite `alerts` sounding
-read-only, all three call the same daily-plan pipeline, which reconciles the
-database against every connector and (re)writes that date's `plans/<date>.md`
-file. `log` is the odd one out: it only appends a time-log entry to the
-database and does not regenerate the plan file. See
-[data-contract.md](data-contract.md) for the exact file/DB format and what
-each command reads and writes.
+read-only, all three (re)write that date's plan file; `log` is the only
+command that doesn't. See [data-contract.md](data-contract.md) for the exact
+file/DB format, the reconciliation mechanism, and what each command reads and
+writes.
 
 ## Capabilities
 
@@ -44,5 +42,5 @@ each command reads and writes.
 | GitHub issues connector | ✅ Live | Needs a GitHub personal access token. See [integrations.md](integrations.md). |
 | Google Calendar committed hours | ⚠️ Gated | The official Calendar MCP server is restricted to Google Workspace / Developer-Preview accounts, so a personal `@gmail.com` account cannot use it. See [integrations.md](integrations.md) for the full story. |
 | Gmail | ⛔ Not wired | No connector is wired in. |
-| `jarvis do` → draft PR | ✅ Live | Allowlist-gated: the target repo must be listed under `execution.repos` in `config.yaml`, and a missing or unreadable config falls back to an empty allowlist — refusing by default rather than executing. Experimental. |
+| `jarvis do` → draft PR | ✅ Live | Allowlist-gated via `execution.repos` in `config.yaml`. Experimental. See [getting-started.md](getting-started.md#optional-jarvis-do-execution) for the fail-safe fallback when config is missing. |
 | Scheduler daemon (unattended runs) | ⛔ Not wired | The `@jarvis/scheduler` package exists, but no CLI command starts it — every run today is triggered manually. |
