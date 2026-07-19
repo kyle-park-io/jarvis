@@ -62,3 +62,16 @@ These are SOLID applied to this codebase, plus the ones that matter more for an 
 - Prefer human-readable output — also emit state as `plans/*.md` (the folder is the dashboard).
 - When a decision changes, update the design doc first, then refresh this summary.
 - **Changelog:** every PR with a user-facing change adds a one-line entry to `CHANGELOG.md` under the matching `[Unreleased]` category (Added / Changed / Fixed / Deprecated / Removed / Security), tagged `(#N)`; pure docs / meta / CI-only PRs are exempt. Follows [Keep a Changelog](https://keepachangelog.com); release mechanics live in **Versioning & release** above.
+
+## Documentation
+
+Where a fact belongs, and where a new doc file goes: **[`docs/README.md`](./docs/README.md)** is the map — don't restate it here.
+
+Docs are pinned to triggers, so keeping them current is mechanical, not remembered:
+
+| When this changes | Update |
+|---|---|
+| a command is added or changed | `docs/capabilities.md` + `docs/data-contract.md` + the CLI `HELP` string |
+| prerequisites or secrets change | `docs/getting-started.md` + `.env.example` + `docs/integrations.md` |
+| an integration's status changes | `docs/integrations.md` (+ `docs/capabilities.md` if it's user-visible) |
+| anything user-facing | the changelog rule above |
