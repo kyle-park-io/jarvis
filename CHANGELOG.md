@@ -17,7 +17,12 @@ See CLAUDE.md -> Working rules.
 
 ### Added
 
+- CI rejects a pull request title that would make a bad commit subject on `main` — non-English (Korean/CJK) or not Conventional Commits (#20)
 - `jarvis do <owner/repo#N>` (Phase 2, experimental): drafts a PR for an allowlisted-repo issue using the local Claude CLI in an isolated clone — never touches main, opens a draft PR as the approval gate, audited to `<dataRoot>/audit.log` (#18)
+
+### Changed
+
+- `jarvis do` draft PRs use a fixed subject (`chore(jarvis): draft for #N`) instead of embedding the issue title, so the text that lands on the target repo's `main` after a squash merge is not external input; the issue title moved to the PR body (#20)
 
 ## [0.2.0] - 2026-07-16
 

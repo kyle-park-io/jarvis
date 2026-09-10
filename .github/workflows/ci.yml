@@ -22,6 +22,18 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Checked here, INSIDE the `build` job, rather than as a job of its own: `build` is the only
+      # required status check in the protect-main ruleset, so a separate job would report but not
+      # block until someone adds it to that list.
+      #
+      # The title goes through the environment, never interpolated into the `run:` line -- a title
+      # containing a backtick or $(...) would otherwise execute on the runner.
+      - name: Check the PR title makes a usable commit subject
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: pnpm check:pr-title
+
       - run: pnpm typecheck
 
       - run: pnpm test
