@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { issueBranchName } from './ref';
+import { issueBranchName, issuePrTitle } from './ref';
 import { buildTaskPrompt } from './prompt';
 import { auditLine } from './audit';
 
@@ -117,7 +117,7 @@ export async function executeIssue(params: ExecuteIssueParams, run: RunFn = defa
       '-C', worktree,
       '-c', `user.name=${authorName}`,
       '-c', `user.email=${authorEmail}`,
-      'commit', '-m', `jarvis: address #${number} — ${params.title}`,
+      'commit', '-m', issuePrTitle(number),
     ]);
     await must(run, 'git', ['-C', worktree, 'push', '-u', 'origin', branch]);
     const pr = await must(run, 'gh', [
@@ -125,8 +125,8 @@ export async function executeIssue(params: ExecuteIssueParams, run: RunFn = defa
       '--repo', slug,
       '--draft',
       '--head', branch,
-      '--title', `[jarvis] #${number}: ${params.title}`,
-      '--body', `Automated draft by Jarvis for #${number}.\n\n${claude.result}`,
+      '--title', issuePrTitle(number),
+      '--body', `Automated draft by Jarvis for #${number}: ${params.title}\n\n${claude.result}`,
     ]);
     prUrl = pr.stdout.trim();
   }

@@ -60,6 +60,14 @@ describe('executeIssue', () => {
     expect(joined).toMatch(/git .*-c user\.name=.* -c user\.email=.* commit/);
     expect(joined).toMatch(/git .*push/);
     expect(joined).toMatch(/gh pr create .*--draft/);
+    // The PR title is the target repo's commit subject after a squash merge, so it must not carry
+    // the issue title -- which here contains parentheses and could contain anything.
+    const prCall = calls.find((c) => c.startsWith('gh pr create')) ?? '';
+    const prTitle = /--title (.*) --body/.exec(prCall)?.[1] ?? '';
+    expect(prTitle).toBe('chore(jarvis): draft for #3');
+    expect(prTitle).not.toContain('Add hello');
+    // ...but the issue title is still on the PR, in the body.
+    expect(prCall).toContain('--body Automated draft by Jarvis for #3: Add hello()');
     // audit written
     expect(fs.readFileSync(params.auditPath, 'utf8')).toContain('o/r#3');
   });

@@ -1,4 +1,4 @@
-export { parseIssueRef, issueBranchName, type IssueRef } from './ref';
+export { parseIssueRef, issueBranchName, issuePrTitle, type IssueRef } from './ref';
 export { buildTaskPrompt, type IssuePrompt } from './prompt';
 export { auditLine, type AuditEntry } from './audit';
 export {
