@@ -126,7 +126,7 @@ These were confirmed against the code on 2026-07-20. Every task depends on them;
 | **F11** | Calendar failure is swallowed: committed hours fall back to `0` with a stderr warning; the plan still runs. | `apps/cli/src/bin.ts:52-59` |
 | **F12** | `jarvis do` gates on `config.yaml` `execution.repos`; unreadable config falls back to an empty allowlist (refuse). It reads the issue via `gh issue view`. | `apps/cli/src/bin.ts:78-99` |
 | **F13** | `do` writes `<dataRoot>/audit.log` and clones into `<dataRoot>/work/<owner>-<repo>-<N>-<ts>/`. Nothing deletes `work/`. | `apps/cli/src/bin.ts:107-111`; `packages/agent/src/executor.ts:87` |
-| **F14** | Requires Node `>=20`, pnpm workspaces. Root scripts are only `test`, `typecheck`, `jarvis` — there is **no `build` script**. | root `package.json` |
+| **F14** | Requires Node `>=22.13` (pnpm 11's own floor), pnpm workspaces. Root scripts are `test`, `typecheck`, `check:pr-title`, `jarvis` — there is **no `build` script**. | root `package.json` |
 | **F15** | Google Calendar's official MCP server is gated to Workspace / Developer-Preview accounts; personal Gmail gets `The caller does not have permission`. | `docs/integrations.md`; `apps/cli/src/calendar-mcp.ts` comment |
 
 ---
@@ -193,7 +193,7 @@ git commit -m "docs: add a capabilities reference with honest status markers"
 
 - [ ] **Step 1: Write the prerequisites section**
 
-Required: Node `>=20`, pnpm, git (F14). Optional, each with what it unlocks:
+Required: Node `>=22.13`, pnpm, git (F14). Optional, each with what it unlocks:
 
 - a GitHub PAT with issue read → the GitHub connector
 - `gh` CLI, logged in → `jarvis do`

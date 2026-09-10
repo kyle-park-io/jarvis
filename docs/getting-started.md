@@ -10,7 +10,7 @@ command list.
 
 Required:
 
-- Node **>=20**
+- Node **>=22.13**
 - pnpm
 - git
 
