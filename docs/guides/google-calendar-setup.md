@@ -79,7 +79,7 @@ GOOGLE_OAUTH_CLIENT_SECRET=<your client secret>
 ## 6. Authorize Jarvis (one-time browser consent)
 
 ```
-jarvis auth google
+pnpm jarvis auth google
 ```
 
 Jarvis prints a URL and waits. Open it, sign in, and approve:
@@ -92,13 +92,13 @@ Jarvis prints a URL and waits. Open it, sign in, and approve:
 The browser redirects to Jarvis's local server, which stores your tokens in
 `~/jarvis/google-token.json`. You should see **"Authorized — tokens saved."**
 
-> Times out after 5 minutes if you don't finish — just run `jarvis auth google`
+> Times out after 5 minutes if you don't finish — just run `pnpm jarvis auth google`
 > again.
 
 ## 7. Verify
 
 ```
-jarvis plan
+pnpm jarvis plan
 ```
 
 Today's capacity should now be reduced by your real meeting hours. Done — Jarvis
@@ -115,7 +115,7 @@ again unless you revoke access or delete `google-token.json`.
 - **No Google set up?** Jarvis is fail-safe: with no credentials or token it
   assumes **0 committed hours** and works exactly as before.
 - **Re-authorize / switch account:** delete `~/jarvis/google-token.json` and run
-  `jarvis auth google` again.
+  `pnpm jarvis auth google` again.
 - **"access_denied" / you clicked Cancel:** Jarvis reports it and exits — just
   re-run and approve.
 - **Nothing subtracted from capacity:** confirm the event is a **timed** event

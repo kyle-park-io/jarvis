@@ -16,10 +16,10 @@ credential or config means Jarvis runs without that source, never crashes.
 
 | Integration | Via | Server / endpoint | Tool(s) | Auth | Status |
 |---|---|---|---|---|---|
-| **GitHub** | Official remote MCP server | `https://api.githubcopilot.com/mcp/` | `list_issues` | `GITHUB_PERSONAL_ACCESS_TOKEN` (Bearer) | ✅ **Live** |
-| **Google Calendar** | Official remote MCP server | `https://calendarmcp.googleapis.com/mcp/v1` | `list_events` | Google OAuth 2.0 (Bearer access token) | ⚠️ **Built, gated** |
-| **Gmail** | Official remote MCP server (planned) | `https://gmailmcp.googleapis.com/mcp/v1` | TBD | Google OAuth 2.0 | ⛔ **Not wired** |
-| **Local `claude` CLI** | Phase 2 executor (`jarvis do`) | `claude -p … --output-format json` in a worktree | Read/Write/Edit/Bash (built-in) | Claude subscription login (**no API key**) | ✅ **Live** (experimental) |
+| **GitHub** | Official remote MCP server | `https://api.githubcopilot.com/mcp/` | `list_issues` | `GITHUB_PERSONAL_ACCESS_TOKEN` (Bearer) | ✅ Live |
+| **Google Calendar** | Official remote MCP server | `https://calendarmcp.googleapis.com/mcp/v1` | `list_events` | Google OAuth 2.0 (Bearer access token) | ⚠️ Gated |
+| **Gmail** | Official remote MCP server (planned) | `https://gmailmcp.googleapis.com/mcp/v1` | TBD | Google OAuth 2.0 | ⛔ Not wired |
+| **Local `claude` CLI** | Phase 2 executor (`jarvis do`) | `claude -p … --output-format json` in a worktree | Read/Write/Edit/Bash (built-in) | Claude subscription login (**no API key**) | ✅ Live |
 | **Folder** | Local filesystem | `<dataRoot>/streams/*` | — | none | ✅ Live (not external) |
 
 ---
@@ -38,17 +38,17 @@ credential or config means Jarvis runs without that source, never crashes.
 - **What:** committed-hours provider — sums the day's meeting hours and subtracts them from the day's capacity.
 - **MCP server:** the official Calendar remote MCP server, `https://calendarmcp.googleapis.com/mcp/v1` (HTTP).
 - **Tool:** `list_events` (args `calendarId: "primary"`, `startTime`, `endTime`).
-- **Auth:** Google **OAuth 2.0** — a Bearer access token obtained once via `jarvis auth google` and auto-refreshed. Required scopes:
+- **Auth:** Google **OAuth 2.0** — a Bearer access token obtained once via `pnpm jarvis auth google` and auto-refreshed. Required scopes:
   - `https://www.googleapis.com/auth/calendar.calendarlist.readonly`
   - `https://www.googleapis.com/auth/calendar.events.freebusy`
   - `https://www.googleapis.com/auth/calendar.events.readonly`
 - **Required Google Cloud setup:** enable **Google Calendar API** *and* **Google Calendar MCP API** (`calendarmcp.googleapis.com`) in the OAuth client's project; a Desktop OAuth client. See [`docs/guides/google-calendar-setup.md`](guides/google-calendar-setup.md).
 - **Client:** `@modelcontextprotocol/sdk` transport + `google-auth-library` in `apps/cli/src/{calendar-mcp,google-auth,auth-command}.ts`; pure mapper in `packages/connectors/src/calendar.ts`.
-- **⚠️ Status:** the official remote server is **gated to Google Workspace / Developer-Preview accounts** — a personal `@gmail.com` account gets `The caller does not have permission`. Fail-safe (0 committed hours). The path to support personal accounts is a **local** Google MCP server wrapping the plain Calendar API.
+- **Status:** ⚠️ Gated — the official remote server is restricted to Google Workspace / Developer-Preview accounts, so a personal `@gmail.com` account gets `The caller does not have permission`. Fail-safe (0 committed hours). The path to support personal accounts is a **local** Google MCP server wrapping the plain Calendar API.
 
 ## Google OAuth — auth mechanism (not a data path)
 
-Backs Calendar (and future Gmail). `google-auth-library`'s `OAuth2Client` runs the one-time loopback consent (`jarvis auth google`), stores the refresh token in `~/jarvis/google-token.json`, and mints/refreshes access tokens against Google's OAuth endpoints. Client creds: `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET`.
+Backs Calendar (and future Gmail). `google-auth-library`'s `OAuth2Client` runs the one-time loopback consent (`pnpm jarvis auth google`), stores the refresh token in `~/jarvis/google-token.json`, and mints/refreshes access tokens against Google's OAuth endpoints. Client creds: `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET`.
 
 ## Gmail — planned
 
@@ -79,4 +79,4 @@ All secrets live in **`<dataRoot>/.env`** (default `~/jarvis/.env`), outside the
 | `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET` | Google Calendar/Gmail MCP | used when Google is set up |
 | `ANTHROPIC_API_KEY` | — Phase 2 uses the local `claude` CLI (subscription), not the API | **not used** (kept for a possible always-on/serverless future) |
 
-Derived/stored credentials: `~/jarvis/google-token.json` (Google refresh token, written by `jarvis auth google`). Both `.env` and `google-token.json` sit in the data directory and are never committed.
+Derived/stored credentials: `~/jarvis/google-token.json` (Google refresh token, written by `pnpm jarvis auth google`). Both `.env` and `google-token.json` sit in the data directory and are never committed.

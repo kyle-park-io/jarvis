@@ -28,3 +28,6 @@ coverage/
 
 # Design docs with personal work context — kept out of the public repo
 design/
+
+# Internal-only docs (org names, repo allowlists) — kept out of the public repo
+internal/
