@@ -22,6 +22,7 @@ See CLAUDE.md -> Working rules.
 
 ### Changed
 
+- Declared Node floor is `>=22.13` instead of `>=20`, which is what the toolchain has actually required since the first release — pnpm 11 refuses to run below it, so `pnpm install` fails on Node 20 (#21)
 - `jarvis do` draft PRs use a fixed subject (`chore(jarvis): draft for #N`) instead of embedding the issue title, so the text that lands on the target repo's `main` after a squash merge is not external input; the issue title moved to the PR body (#20)
 
 ## [0.2.0] - 2026-07-16
